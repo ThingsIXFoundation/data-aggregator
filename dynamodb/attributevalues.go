@@ -10,9 +10,14 @@ type PKer interface {
 	SK() string
 }
 
-type GS1er interface {
+type GSI1er interface {
 	GSI1_PK() string
 	GSI1_SK() string
+}
+
+type GSI2er interface {
+	GSI2_PK() string
+	GSI2_SK() string
 }
 
 func Marshal(in interface{}) (map[string]types.AttributeValue, error) {
@@ -21,25 +26,25 @@ func Marshal(in interface{}) (map[string]types.AttributeValue, error) {
 		return nil, err
 	}
 
-	if pk, ok := in.(PKer); ok {
-		m["PK"], err = attributevalue.Marshal(pk.PK())
+	if gs1, ok := in.(GSI1er); ok && gs1.GSI1_PK() != "" {
+		m["GSI1_PK"], err = attributevalue.Marshal(gs1.GSI1_PK())
 		if err != nil {
 			return nil, err
 		}
 
-		m["SK"], err = attributevalue.Marshal(pk.SK())
+		m["GSI1_SK"], err = attributevalue.Marshal(gs1.GSI1_SK())
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if gs1, ok := in.(GS1er); ok {
-		m["GS1_PK"], err = attributevalue.Marshal(gs1.GSI1_PK())
+	if gs2, ok := in.(GSI2er); ok && gs2.GSI2_PK() != "" {
+		m["GSI2_PK"], err = attributevalue.Marshal(gs2.GSI2_PK())
 		if err != nil {
 			return nil, err
 		}
 
-		m["GS1_SK"], err = attributevalue.Marshal(gs1.GSI1_SK())
+		m["GSI2_SK"], err = attributevalue.Marshal(gs2.GSI2_SK())
 		if err != nil {
 			return nil, err
 		}

@@ -23,7 +23,7 @@ func init() {
 }
 
 func GetSyncFromBlock(ctx context.Context, client *ethclient.Client, contract common.Address, currentBlockFunc CurrentBlockFunc) (*big.Int, error) {
-	block, err := currentBlockFunc(ctx, contract)
+	block, err := currentBlockFunc(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func GetSyncToBlock(ctx context.Context, client *ethclient.Client, from, confirm
 	// problems with response sizes from the RPC node
 	mustCapped := (maxBlock - from) > maxBlockScanRange
 	if mustCapped {
-		return new(big.Int).SetUint64(from + maxBlock), true, nil
+		return new(big.Int).SetUint64(from + maxBlockScanRange), true, nil
 	}
 	return new(big.Int).SetUint64(maxBlock), false, nil
 }

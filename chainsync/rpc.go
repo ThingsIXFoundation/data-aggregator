@@ -3,14 +3,14 @@ package chainsync
 import (
 	"context"
 
-	"github.com/ThingsIXFoundation/data-aggregator/globalconfig"
+	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 func DialRpc(ctx context.Context) (*ethclient.Client, error) {
-	client, err := ethclient.DialContext(ctx, viper.GetString(globalconfig.CONFIG_CHAINSYNC_RPC_ENDPOINT))
+	client, err := ethclient.DialContext(ctx, viper.GetString(config.CONFIG_CHAINSYNC_RPC_ENDPOINT))
 	if err != nil {
 		return nil, err
 	}
@@ -21,10 +21,10 @@ func DialRpc(ctx context.Context) (*ethclient.Client, error) {
 		return nil, err
 	}
 
-	if chainID.Uint64() != viper.GetUint64(globalconfig.CONFIG_CHAINSYNC_CHAINID) {
+	if chainID.Uint64() != viper.GetUint64(config.CONFIG_CHAINSYNC_CHAINID) {
 		logrus.WithFields(logrus.Fields{
 			"got":      chainID,
-			"expected": viper.GetUint64(globalconfig.CONFIG_CHAINSYNC_CHAINID),
+			"expected": viper.GetUint64(config.CONFIG_CHAINSYNC_CHAINID),
 		}).Fatal("connected to unexpected chain")
 	}
 

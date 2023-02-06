@@ -7,12 +7,13 @@ import (
 )
 
 type DBCurrentBlock struct {
+	Process         string
 	ContractAddress common.Address
 	BlockNumber     uint64
 }
 
 func (e *DBCurrentBlock) PK() string {
-	return fmt.Sprintf("CurrentBlock.%s", e.ContractAddress.Hex())
+	return fmt.Sprintf("CurrentBlock.%s.%s", e.Process, e.ContractAddress.Hex())
 }
 
 func (e *DBCurrentBlock) SK() string {

@@ -1,8 +1,9 @@
-package dynamodb
+package models
 
 import (
 	"crypto/sha256"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/ThingsIXFoundation/data-aggregator/types"
@@ -19,12 +20,13 @@ type DBGatewayEvent struct {
 
 	Type      types.GatewayEventType
 	GatewayID types.ID
+	Version   uint8
 
 	NewOwner *common.Address `dynamodbav:",omitempty"`
 	OldOwner *common.Address `dynamodbav:",omitempty"`
 
-	NewLocation *h3light.Cell `dynamodbav:",omitempty"`
-	OldLocation *h3light.Cell `dynamodbav:",omitempty"`
+	NewLocation *h3light.DatabaseCell `dynamodbav:",omitempty"`
+	OldLocation *h3light.DatabaseCell `dynamodbav:",omitempty"`
 
 	NewAltitude *uint `dynamodbav:",omitempty"`
 	OldAltitude *uint `dynamodbav:",omitempty"`
@@ -42,7 +44,7 @@ type DBGatewayEvent struct {
 }
 
 func (e *DBGatewayEvent) PK() string {
-	return fmt.Sprintf("Gateway.%s.%s", e.ContractAddress.Hex(), e.GatewayID.String())
+	return fmt.Sprintf("Gateway.%s.%s", strings.ToLower(e.ContractAddress.String()), e.GatewayID.String())
 }
 
 func (e *DBGatewayEvent) SK() string {
@@ -58,6 +60,31 @@ func (e *DBGatewayEvent) GSI1_SK() string {
 	return e.SK()
 }
 
+func (e *DBGatewayEvent) GatewayEvent() *types.GatewayEvent {
+	return &types.GatewayEvent{
+		ContractAddress:  e.ContractAddress,
+		BlockNumber:      e.BlockNumber,
+		TransactionIndex: e.TransactionIndex,
+		LogIndex:         e.LogIndex,
+		Type:             e.Type,
+		GatewayID:        e.GatewayID,
+		Version:          e.Version,
+		NewOwner:         e.NewOwner,
+		OldOwner:         e.OldOwner,
+		NewLocation:      e.NewLocation.CellPtr(),
+		OldLocation:      e.OldLocation.CellPtr(),
+		NewAltitude:      e.NewAltitude,
+		OldAltitude:      e.OldAltitude,
+		NewFrequencyPlan: e.NewFrequencyPlan,
+		OldFrequencyPlan: e.OldFrequencyPlan,
+		NewAntennaGain:   e.NewAntennaGain,
+		OldAntennaGain:   e.OldAntennaGain,
+		Block:            e.Block,
+		Transaction:      e.Transaction,
+		Time:             e.Time,
+	}
+}
+
 func NewDBGatewayEvent(event *types.GatewayEvent) *DBGatewayEvent {
 	return &DBGatewayEvent{
 		ContractAddress:  event.ContractAddress,
@@ -66,10 +93,11 @@ func NewDBGatewayEvent(event *types.GatewayEvent) *DBGatewayEvent {
 		LogIndex:         event.LogIndex,
 		Type:             event.Type,
 		GatewayID:        event.GatewayID,
+		Version:          event.Version,
 		NewOwner:         event.NewOwner,
 		OldOwner:         event.OldOwner,
-		NewLocation:      event.NewLocation,
-		OldLocation:      event.OldLocation,
+		NewLocation:      event.NewLocation.DatabaseCellPtr(),
+		OldLocation:      event.OldLocation.DatabaseCellPtr(),
 		NewAltitude:      event.NewAltitude,
 		OldAltitude:      event.OldAltitude,
 		NewFrequencyPlan: event.NewFrequencyPlan,

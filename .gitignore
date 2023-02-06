@@ -19,3 +19,5 @@ go.work
 /cmd/router/*.yaml
 /cmd/forwarder/*.yaml
 *.secret
+config.yaml
+data-aggregator

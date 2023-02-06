@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/ThingsIXFoundation/data-aggregator/chainsync"
+	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/types"
+	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	gateway_registry "github.com/ThingsIXFoundation/gateway-registry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -31,9 +33,9 @@ func init() {
 func (cs *ChainSync) runConfirmedSync(ctx context.Context) error {
 	logrus.WithFields(logrus.Fields{
 		"registry":             cs.contractAddress,
-		"poll-interval":        viper.GetDuration(CONFIG_CHAINSYNC_POLL_INTERVAL),
-		"max-block-scan-range": viper.GetUint(CONFIG_CHAINSYNC_MAX_BLOCK_SCAN_RANGE),
-		"confirmations":        viper.GetUint(CONFIG_CHAINSYNC_CONFORMATIONS),
+		"poll-interval":        viper.GetDuration(config.CONFIG_GATEWAY_CHAINSYNC_POLL_INTERVAL),
+		"max-block-scan-range": viper.GetUint(config.CONFIG_GATEWAY_CHAINSYNC_MAX_BLOCK_SCAN_RANGE),
+		"confirmations":        viper.GetUint(config.CONFIG_GATEWAY_CHAINSYNC_CONFORMATIONS),
 	}).Info("integrate gateways from smart contract")
 
 	pollInterval := time.Duration(time.Second) // first run almost instant
@@ -49,7 +51,7 @@ func (cs *ChainSync) runConfirmedSync(ctx context.Context) error {
 					break
 				}
 				if synced {
-					pollInterval = viper.GetDuration(CONFIG_CHAINSYNC_POLL_INTERVAL)
+					pollInterval = viper.GetDuration(config.CONFIG_GATEWAY_CHAINSYNC_POLL_INTERVAL)
 					break
 				}
 			}
@@ -74,7 +76,7 @@ func (cs *ChainSync) syncConfirmed(ctx context.Context) (bool, error) {
 	}
 
 	// determine to sync to
-	syncTo, capped, err := chainsync.GetSyncToBlock(ctx, client, syncFrom.Uint64(), viper.GetUint64(CONFIG_CHAINSYNC_CONFORMATIONS), viper.GetUint64(CONFIG_CHAINSYNC_MAX_BLOCK_SCAN_RANGE))
+	syncTo, capped, err := chainsync.GetSyncToBlock(ctx, client, syncFrom.Uint64(), viper.GetUint64(config.CONFIG_GATEWAY_CHAINSYNC_CONFORMATIONS), viper.GetUint64(config.CONFIG_GATEWAY_CHAINSYNC_MAX_BLOCK_SCAN_RANGE))
 	if err != nil {
 		return false, fmt.Errorf("unable to determine sync to block: %w", err)
 	}
@@ -85,9 +87,11 @@ func (cs *ChainSync) syncConfirmed(ctx context.Context) (bool, error) {
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"from": syncFrom,
-		"to":   syncTo,
-	}).Trace("sync block range determined")
+		"from":     syncFrom,
+		"to":       syncTo,
+		"contract": cs.contractAddress,
+		"synced":   !capped,
+	}).Info("ingesting gateway events from blockchain")
 
 	// retrieve logs
 	events, err := cs.getEvents(ctx, client, syncFrom, syncTo)
@@ -96,6 +100,11 @@ func (cs *ChainSync) syncConfirmed(ctx context.Context) (bool, error) {
 	}
 
 	err = cs.eventsFunc(ctx, events)
+	if err != nil {
+		return false, err
+	}
+
+	err = cs.setCurrentBlockFunc(ctx, syncTo.Uint64())
 	if err != nil {
 		return false, err
 	}
@@ -144,6 +153,14 @@ func (cs *ChainSync) getEvents(ctx context.Context, client *ethclient.Client, fr
 			"type":  l.Topics[0],
 		}).Trace("event")
 		if event := decodeLogToGatewayEvent(&l); event != nil {
+			if event.Type == types.GatewayOnboardedEvent {
+				gateway, err := gatewayDetails(gatewayRegistry, cs.contractAddress, l.BlockNumber, event.GatewayID)
+				if err != nil {
+					logrus.WithError(err).Error("error while getting added gateway details")
+					return nil, err
+				}
+				event.Version = gateway.Version
+			}
 			// The GatewayUpdated event doesn't contain the gateway details. So fetch the gateway details before and after the update
 			// and include them in the event
 			if event.Type == types.GatewayUpdatedEvent {
@@ -158,13 +175,17 @@ func (cs *ChainSync) getEvents(ctx context.Context, client *ethclient.Client, fr
 					return nil, err
 				}
 
+				event.OldOwner = utils.Ptr(gatewayBefore.Owner)
 				event.OldFrequencyPlan = gatewayBefore.FrequencyPlan
 				event.OldAltitude = gatewayBefore.Altitude
 				event.OldLocation = gatewayBefore.Location
+				event.OldAntennaGain = gatewayBefore.AntennaGain
 
+				event.NewOwner = utils.Ptr(gatewayAfter.Owner)
 				event.NewFrequencyPlan = gatewayAfter.FrequencyPlan
 				event.NewAltitude = gatewayAfter.Altitude
 				event.NewLocation = gatewayAfter.Location
+				event.NewAntennaGain = gatewayAfter.AntennaGain
 			}
 
 			eventTime, err := chainsync.BlockTime(ctx, client, event.BlockNumber)
@@ -172,6 +193,7 @@ func (cs *ChainSync) getEvents(ctx context.Context, client *ethclient.Client, fr
 				logrus.WithError(err).Error("error while getting time of block")
 				return nil, err
 			}
+			event.ContractAddress = cs.contractAddress
 			event.Time = eventTime
 			events = append(events, event)
 		}

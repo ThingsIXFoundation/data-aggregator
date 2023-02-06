@@ -6,6 +6,10 @@ import (
 	"time"
 
 	"github.com/ThingsIXFoundation/data-aggregator/chainsync"
+	"github.com/ThingsIXFoundation/data-aggregator/config"
+	"github.com/ThingsIXFoundation/data-aggregator/types"
+	"github.com/ThingsIXFoundation/data-aggregator/utils"
+	gateway_registry "github.com/ThingsIXFoundation/gateway-registry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	etypes "github.com/ethereum/go-ethereum/core/types"
@@ -24,10 +28,10 @@ var (
 func (cs *ChainSync) runPending(ctx context.Context) error {
 	logrus.WithFields(logrus.Fields{
 		"registry":      cs.contractAddress,
-		"confirmations": viper.GetUint(CONFIG_CHAINSYNC_CONFORMATIONS),
+		"confirmations": viper.GetUint(config.CONFIG_GATEWAY_CHAINSYNC_CONFORMATIONS),
 	}).Info("syncing pending gateway events from smart contract")
 
-	if viper.GetUint(CONFIG_CHAINSYNC_CONFORMATIONS) == 0 {
+	if viper.GetUint(config.CONFIG_GATEWAY_CHAINSYNC_CONFORMATIONS) == 0 {
 		logrus.Info("confirmations 0, don't integrate pending events")
 		<-ctx.Done() // wait until the shutdown signal is given
 		return nil
@@ -90,6 +94,12 @@ func (cs *ChainSync) handlePending(ctx context.Context) error {
 		return fmt.Errorf("unable to subscribe to gateway registry events: %w", err)
 	}
 
+	gatewayRegistry, err := gateway_registry.NewGatewayRegistryCaller(cs.contractAddress, client)
+	if err != nil {
+		logrus.WithError(err).Error("error while creating gateway-registry caller")
+		return err
+	}
+
 	// begin integrating events
 	for {
 		select {
@@ -101,13 +111,50 @@ func (cs *ChainSync) handlePending(ctx context.Context) error {
 				return fmt.Errorf("waiting for pendings log subscription failed: %w", err)
 			}
 			return nil
-		case log, ok := <-logs:
+		case l, ok := <-logs:
 			if !ok {
 				return fmt.Errorf("unable to retrieve pending gateway logs")
 			}
-			gatewayEvent := decodeLogToGatewayEvent(&log)
+			if event := decodeLogToGatewayEvent(&l); event != nil {
+				// The GatewayUpdated event doesn't contain the gateway details. So fetch the gateway details before and after the update
+				// and include them in the event
+				if event.Type == types.GatewayUpdatedEvent {
+					gatewayBefore, err := gatewayDetails(gatewayRegistry, cs.contractAddress, l.BlockNumber-1, event.GatewayID)
+					if err != nil {
+						logrus.WithError(err).Error("error while getting before-update gateway details")
+						return err
+					}
+					gatewayAfter, err := gatewayDetails(gatewayRegistry, cs.contractAddress, l.BlockNumber, event.GatewayID)
+					if err != nil {
+						logrus.WithError(err).Error("error while getting updated gateway details")
+						return err
+					}
 
-			cs.pendingEventFunc(ctx, gatewayEvent)
+					event.OldOwner = utils.Ptr(gatewayBefore.Owner)
+					event.OldFrequencyPlan = gatewayBefore.FrequencyPlan
+					event.OldAltitude = gatewayBefore.Altitude
+					event.OldLocation = gatewayBefore.Location
+					event.OldAntennaGain = gatewayBefore.AntennaGain
+
+					event.NewOwner = utils.Ptr(gatewayAfter.Owner)
+					event.NewFrequencyPlan = gatewayAfter.FrequencyPlan
+					event.NewAltitude = gatewayAfter.Altitude
+					event.NewLocation = gatewayAfter.Location
+					event.NewAntennaGain = gatewayAfter.AntennaGain
+				}
+
+				eventTime, err := chainsync.BlockTime(ctx, client, event.BlockNumber)
+				if err != nil {
+					logrus.WithError(err).Error("error while getting time of block")
+					return err
+				}
+				event.ContractAddress = cs.contractAddress
+				event.Time = eventTime
+
+				cs.pendingEventFunc(ctx, event)
+
+				return nil
+			}
 		}
 	}
 }
