@@ -8,6 +8,14 @@ import (
 
 type GatewayEventType string
 
+const (
+	GatewayOnboardedEvent   GatewayEventType = "onboard"
+	GatewayOffboardedEvent  GatewayEventType = "offboard"
+	GatewayUpdatedEvent     GatewayEventType = "update"
+	GatewayTransferredEvent GatewayEventType = "transfer"
+	GatewayUnknownEvent     GatewayEventType = "unknown"
+)
+
 func (event *GatewayEventType) Scan(value interface{}) error {
 	if str, ok := value.(string); ok {
 		*event = GatewayEventType(str)
@@ -35,11 +43,3 @@ func (event *GatewayEventType) UnmarshalText(input []byte) error {
 		return fmt.Errorf(`invalid event type "%s"`, input)
 	}
 }
-
-const (
-	GatewayOnboardedEvent   GatewayEventType = "onboard"
-	GatewayOffboardedEvent  GatewayEventType = "offboard"
-	GatewayUpdatedEvent     GatewayEventType = "update"
-	GatewayTransferredEvent GatewayEventType = "transfer"
-	GatewayUnknownEvent     GatewayEventType = "unknown"
-)

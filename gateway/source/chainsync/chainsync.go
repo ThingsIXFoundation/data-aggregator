@@ -24,7 +24,7 @@ var _ interfac.Source = (*ChainSync)(nil)
 
 func NewChainSync() (*ChainSync, error) {
 	return &ChainSync{
-		contractAddress: common.HexToAddress(viper.GetString(config.CONFIG_GATEAWAY_CONTRACT)),
+		contractAddress: common.HexToAddress(viper.GetString(config.CONFIG_GATEWAY_CONTRACT)),
 	}, nil
 }
 

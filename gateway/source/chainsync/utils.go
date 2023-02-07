@@ -1,9 +1,11 @@
 package chainsync
 
 import (
+	"context"
 	"fmt"
 	"math/big"
 
+	"github.com/ThingsIXFoundation/data-aggregator/chainsync"
 	"github.com/ThingsIXFoundation/data-aggregator/types"
 	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	gateway_registry "github.com/ThingsIXFoundation/gateway-registry-go"
@@ -12,85 +14,85 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	etypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/sirupsen/logrus"
 )
 
-func decodeLogToGatewayEvent(l *etypes.Log) *types.GatewayEvent {
-	switch l.Topics[0] {
+func decodeLogToGatewayEvent(ctx context.Context, log *etypes.Log, client *ethclient.Client, gatewayRegistry *gateway_registry.GatewayRegistryCaller, contractAddress common.Address) (*types.GatewayEvent, error) {
+	event := &types.GatewayEvent{
+		Block:            log.BlockHash,
+		BlockNumber:      log.BlockNumber,
+		Transaction:      log.TxHash,
+		TransactionIndex: log.TxIndex,
+		LogIndex:         log.Index,
+		ContractAddress:  contractAddress,
+	}
+	switch log.Topics[0] {
 	case GatewayOnboardedEvent:
-		return decodeOnboardLog(l)
+		event.Type = types.GatewayOnboardedEvent
+		event.GatewayID = types.ID(log.Topics[1])
+		event.NewOwner = utils.Ptr(common.BytesToAddress(log.Topics[2].Bytes()))
+		gateway, err := gatewayDetails(gatewayRegistry, contractAddress, log.BlockNumber, event.GatewayID)
+		if err != nil {
+			logrus.WithError(err).Error("error while getting added gateway details")
+			return nil, err
+		}
+		event.Version = gateway.Version
+
 	case GatewayOffboardedEvent:
-		return decodeOffboardLog(l)
+		event.Type = types.GatewayOffboardedEvent
+		event.GatewayID = types.ID(log.Topics[1])
+
 	case GatewayUpdatedEvent:
-		return decodeUpdateLog(l)
+		event.Type = types.GatewayUpdatedEvent
+		event.GatewayID = types.ID(log.Topics[1])
+		gatewayBefore, err := gatewayDetails(gatewayRegistry, contractAddress, log.BlockNumber-1, event.GatewayID)
+		if err != nil {
+			logrus.WithError(err).Error("error while getting before-update gateway details")
+			return nil, err
+		}
+		gatewayAfter, err := gatewayDetails(gatewayRegistry, contractAddress, log.BlockNumber, event.GatewayID)
+		if err != nil {
+			logrus.WithError(err).Error("error while getting updated gateway details")
+			return nil, err
+		}
+
+		event.OldOwner = utils.Ptr(gatewayBefore.Owner)
+		event.OldFrequencyPlan = gatewayBefore.FrequencyPlan
+		event.OldAltitude = gatewayBefore.Altitude
+		event.OldLocation = gatewayBefore.Location
+		event.OldAntennaGain = gatewayBefore.AntennaGain
+
+		event.NewOwner = utils.Ptr(gatewayAfter.Owner)
+		event.NewFrequencyPlan = gatewayAfter.FrequencyPlan
+		event.NewAltitude = gatewayAfter.Altitude
+		event.NewLocation = gatewayAfter.Location
+		event.NewAntennaGain = gatewayAfter.AntennaGain
+
 	case GatewayTransferredEvent:
-		return decodeTransferLog(l)
+		event.Type = types.GatewayTransferredEvent
+		event.GatewayID = types.ID(log.Topics[1])
+		event.OldOwner = utils.Ptr(common.BytesToAddress(log.Topics[2].Bytes()))
+		event.NewOwner = utils.Ptr(common.BytesToAddress(log.Topics[3].Bytes()))
+
 	default:
 		logrus.WithFields(logrus.Fields{
-			"block":    l.BlockHash,
-			"tx":       l.TxHash,
-			"txindex":  l.TxIndex,
-			"logindex": l.Index,
-			"type":     l.Topics[0],
+			"block":    log.BlockHash,
+			"tx":       log.TxHash,
+			"txindex":  log.TxIndex,
+			"logindex": log.Index,
+			"type":     log.Topics[0],
 		}).Debug("received non gateway related event from registry")
-		return nil // not interested in this event
+		return nil, nil // not interested in this event
 	}
-}
 
-func decodeOnboardLog(l *etypes.Log) *types.GatewayEvent {
-	owner := common.BytesToAddress(l.Topics[2].Bytes())
-	return &types.GatewayEvent{
-		Type:             types.GatewayOnboardedEvent,
-		GatewayID:        types.ID(l.Topics[1]),
-		NewOwner:         &owner,
-		Block:            l.BlockHash,
-		BlockNumber:      l.BlockNumber,
-		Transaction:      l.TxHash,
-		TransactionIndex: l.TxIndex,
-		LogIndex:         l.Index,
+	eventTime, err := chainsync.BlockTime(ctx, client, event.BlockNumber)
+	if err != nil {
+		logrus.WithError(err).Error("error while getting time of block")
+		return nil, err
 	}
-}
-
-func decodeOffboardLog(l *etypes.Log) *types.GatewayEvent {
-	return &types.GatewayEvent{
-		Type:             types.GatewayOffboardedEvent,
-		GatewayID:        types.ID(l.Topics[1]),
-		Block:            l.BlockHash,
-		BlockNumber:      l.BlockNumber,
-		Transaction:      l.TxHash,
-		TransactionIndex: l.TxIndex,
-		LogIndex:         l.Index,
-	}
-}
-
-func decodeUpdateLog(l *etypes.Log) *types.GatewayEvent {
-	// TODO: Record update
-	return &types.GatewayEvent{
-		Type:             types.GatewayUpdatedEvent,
-		GatewayID:        types.ID(l.Topics[1]),
-		Block:            l.BlockHash,
-		BlockNumber:      l.BlockNumber,
-		Transaction:      l.TxHash,
-		TransactionIndex: l.TxIndex,
-		LogIndex:         l.Index,
-	}
-}
-
-func decodeTransferLog(l *etypes.Log) *types.GatewayEvent {
-	oldOwner := common.BytesToAddress(l.Topics[2].Bytes())
-	newOwner := common.BytesToAddress(l.Topics[3].Bytes())
-
-	return &types.GatewayEvent{
-		Type:             types.GatewayTransferredEvent,
-		GatewayID:        types.ID(l.Topics[1]),
-		NewOwner:         &newOwner,
-		OldOwner:         &oldOwner,
-		Block:            l.BlockHash,
-		BlockNumber:      l.BlockNumber,
-		Transaction:      l.TxHash,
-		TransactionIndex: l.TxIndex,
-		LogIndex:         l.Index,
-	}
+	event.Time = eventTime
+	return event, nil
 }
 
 func gatewayDetails(registry *gateway_registry.GatewayRegistryCaller, contract common.Address, block uint64, gatewayID [32]byte) (*types.Gateway, error) {

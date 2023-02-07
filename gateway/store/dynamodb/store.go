@@ -90,7 +90,7 @@ func (s *Store) tableNameForProcess(process string) (string, error) {
 
 // CurrentBlock implements store.Store
 func (s *Store) CurrentBlock(ctx context.Context, process string) (uint64, error) {
-	contract := config.AddressFromConfig(config.CONFIG_GATEAWAY_CONTRACT)
+	contract := config.AddressFromConfig(config.CONFIG_GATEWAY_CONTRACT)
 	cb := &dadynamo.DBCurrentBlock{
 		Process:         process,
 		ContractAddress: contract,
@@ -131,7 +131,7 @@ func (s *Store) CurrentBlock(ctx context.Context, process string) (uint64, error
 
 // StoreCurrentBlock implements store.Store
 func (s *Store) StoreCurrentBlock(ctx context.Context, process string, height uint64) error {
-	contract := config.AddressFromConfig(config.CONFIG_GATEAWAY_CONTRACT)
+	contract := config.AddressFromConfig(config.CONFIG_GATEWAY_CONTRACT)
 	cb := &dadynamo.DBCurrentBlock{
 		Process:         process,
 		ContractAddress: contract,
@@ -217,7 +217,7 @@ func (s *Store) FirstEvent(ctx context.Context) (*types.GatewayEvent, error) {
 		}
 
 		if len(out.Items) == 0 {
-			return nil, nil
+			continue
 		}
 
 		gatewayEvent := &types.GatewayEvent{}
@@ -291,7 +291,7 @@ func (s *Store) EventsFromTo(ctx context.Context, from, to uint64) ([]*types.Gat
 }
 
 func (s *Store) GetEvents(ctx context.Context, gatewayID types.ID) ([]*types.GatewayEvent, error) {
-	pk := fmt.Sprintf("Gateway.%s.%s", strings.ToLower(config.AddressFromConfig(config.CONFIG_GATEAWAY_CONTRACT).String()), gatewayID.String())
+	pk := fmt.Sprintf("Gateway.%s.%s", strings.ToLower(config.AddressFromConfig(config.CONFIG_GATEWAY_CONTRACT).String()), gatewayID.String())
 	pkexpr := expression.Key("PK").Equal(expression.Value(pk))
 	skexpr := expression.Key("SK").BeginsWith("GatewayEvent.")
 
@@ -535,7 +535,7 @@ func (s *Store) StoreHistory(ctx context.Context, history *types.GatewayHistory)
 func (s *Store) GetHistoryAt(ctx context.Context, id types.ID, at time.Time) (*types.GatewayHistory, error) {
 	dbhistory := &models.DBGatewayHistory{
 		ID:              id,
-		ContractAddress: config.AddressFromConfig(config.CONFIG_GATEAWAY_CONTRACT),
+		ContractAddress: config.AddressFromConfig(config.CONFIG_GATEWAY_CONTRACT),
 		Time:            at,
 	}
 
@@ -584,7 +584,7 @@ func (s *Store) GetHistoryAt(ctx context.Context, id types.ID, at time.Time) (*t
 func (s *Store) Get(ctx context.Context, id types.ID) (*types.Gateway, error) {
 	dbgateway := &models.DBGateway{
 		ID:              id,
-		ContractAddress: config.AddressFromConfig(config.CONFIG_GATEAWAY_CONTRACT),
+		ContractAddress: config.AddressFromConfig(config.CONFIG_GATEWAY_CONTRACT),
 	}
 
 	out, err := s.client.GetItem(ctx, &dynamodb.GetItemInput{
@@ -685,7 +685,7 @@ func (s *Store) Store(ctx context.Context, gateway *types.Gateway) error {
 func (s *Store) Delete(ctx context.Context, id types.ID) error {
 	dbgateway := &models.DBGateway{
 		ID:              id,
-		ContractAddress: config.AddressFromConfig(config.CONFIG_GATEAWAY_CONTRACT),
+		ContractAddress: config.AddressFromConfig(config.CONFIG_GATEWAY_CONTRACT),
 	}
 	_, err := s.client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key:       dadynamo.GetKey(dbgateway),

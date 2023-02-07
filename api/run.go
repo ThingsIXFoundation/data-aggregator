@@ -11,7 +11,7 @@ func Run(ctx context.Context) error {
 
 	errChan := make(chan error)
 
-	gapi, err := NewGatewayAPI()
+	gapi, err := NewAPI()
 	if err != nil {
 		return err
 	}

@@ -17,30 +17,24 @@ type DBGatewayEvent struct {
 	BlockNumber      uint64
 	TransactionIndex uint
 	LogIndex         uint
+	Block            common.Hash
+	Transaction      common.Hash
 
 	Type      types.GatewayEventType
 	GatewayID types.ID
 	Version   uint8
 
-	NewOwner *common.Address `dynamodbav:",omitempty"`
-	OldOwner *common.Address `dynamodbav:",omitempty"`
-
-	NewLocation *h3light.DatabaseCell `dynamodbav:",omitempty"`
-	OldLocation *h3light.DatabaseCell `dynamodbav:",omitempty"`
-
-	NewAltitude *uint `dynamodbav:",omitempty"`
-	OldAltitude *uint `dynamodbav:",omitempty"`
-
+	NewOwner         *common.Address          `dynamodbav:",omitempty"`
+	OldOwner         *common.Address          `dynamodbav:",omitempty"`
+	NewLocation      *h3light.DatabaseCell    `dynamodbav:",omitempty"`
+	OldLocation      *h3light.DatabaseCell    `dynamodbav:",omitempty"`
+	NewAltitude      *uint                    `dynamodbav:",omitempty"`
+	OldAltitude      *uint                    `dynamodbav:",omitempty"`
 	NewFrequencyPlan *frequency_plan.BandName `dynamodbav:",omitempty"`
 	OldFrequencyPlan *frequency_plan.BandName `dynamodbav:",omitempty"`
-
-	NewAntennaGain *float32 `dynamodbav:",omitempty"`
-	OldAntennaGain *float32 `dynamodbav:",omitempty"`
-
-	Block       common.Hash `dynamodbav:",omitempty"`
-	Transaction common.Hash `dynamodbav:",omitempty"`
-
-	Time time.Time
+	NewAntennaGain   *float32                 `dynamodbav:",omitempty"`
+	OldAntennaGain   *float32                 `dynamodbav:",omitempty"`
+	Time             time.Time
 }
 
 func (e *DBGatewayEvent) PK() string {
@@ -66,6 +60,8 @@ func (e *DBGatewayEvent) GatewayEvent() *types.GatewayEvent {
 		BlockNumber:      e.BlockNumber,
 		TransactionIndex: e.TransactionIndex,
 		LogIndex:         e.LogIndex,
+		Block:            e.Block,
+		Transaction:      e.Transaction,
 		Type:             e.Type,
 		GatewayID:        e.GatewayID,
 		Version:          e.Version,
@@ -79,8 +75,6 @@ func (e *DBGatewayEvent) GatewayEvent() *types.GatewayEvent {
 		OldFrequencyPlan: e.OldFrequencyPlan,
 		NewAntennaGain:   e.NewAntennaGain,
 		OldAntennaGain:   e.OldAntennaGain,
-		Block:            e.Block,
-		Transaction:      e.Transaction,
 		Time:             e.Time,
 	}
 }
@@ -91,6 +85,8 @@ func NewDBGatewayEvent(event *types.GatewayEvent) *DBGatewayEvent {
 		BlockNumber:      event.BlockNumber,
 		TransactionIndex: event.TransactionIndex,
 		LogIndex:         event.LogIndex,
+		Block:            event.Block,
+		Transaction:      event.Transaction,
 		Type:             event.Type,
 		GatewayID:        event.GatewayID,
 		Version:          event.Version,
@@ -104,8 +100,6 @@ func NewDBGatewayEvent(event *types.GatewayEvent) *DBGatewayEvent {
 		OldFrequencyPlan: event.OldFrequencyPlan,
 		NewAntennaGain:   event.NewAntennaGain,
 		OldAntennaGain:   event.OldAntennaGain,
-		Block:            event.Block,
-		Transaction:      event.Transaction,
 		Time:             event.Time,
 	}
 }

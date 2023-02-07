@@ -50,8 +50,12 @@ github.com/ThingsIXFoundation/h3-light v0.0.0-20230202175737-5a4dd96d2990 h1:Fsq
 github.com/ThingsIXFoundation/h3-light v0.0.0-20230202175737-5a4dd96d2990/go.mod h1:p3V5tlZH2oU4mShm6RufV5C+dPm4IvpryDAxq6U8bbU=
 github.com/ThingsIXFoundation/http-utils v0.0.0-20230206101704-4a5e41dfc150 h1:4kCGQmh2EvMm3R6fOOJbe3qb1S6Ht7kfXL1aAFzpCKw=
 github.com/ThingsIXFoundation/http-utils v0.0.0-20230206101704-4a5e41dfc150/go.mod h1:VLKCXXcBTLjoxBsO1ijeV8OB4SFyn4jT6ixMM1XrcJs=
+github.com/ThingsIXFoundation/mapper-registry-go v0.0.0-20230207125540-21fbd2a4f29d h1:mNuZhYXda/86H5NgonxKEnx6mbDqSzZN28gbGKEi55E=
+github.com/ThingsIXFoundation/mapper-registry-go v0.0.0-20230207125540-21fbd2a4f29d/go.mod h1:KTo49tK3C2PbluvIzzWqTf2POQjH+jHHPtDLm2sby4I=
 github.com/ThingsIXFoundation/packet-handling v1.0.3 h1:n5tGhqh5HX5JjBTmhc3IvxtuqprlfqjVTC7nJ1ijTxU=
 github.com/ThingsIXFoundation/packet-handling v1.0.3/go.mod h1:v+1NPAA7KZXmh5nBOA8WfAK7vvuxTDu4SNhqnabqhd4=
+github.com/ThingsIXFoundation/router-registry-go v1.1.0 h1:zWZMhrc4ZuLVR5X2hsu1TVSpkQJo4xM/+oWMrW7bUK0=
+github.com/ThingsIXFoundation/router-registry-go v1.1.0/go.mod h1:JA8B+SBQEL1MAvHrbNw053bSzq++BBwW7QJ/s7BH018=
 github.com/VictoriaMetrics/fastcache v1.6.0 h1:C/3Oi3EiBCqufydp1neRZkqcwmEiuRT9c3fqvvgKm5o=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=

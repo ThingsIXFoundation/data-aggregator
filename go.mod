@@ -74,6 +74,8 @@ require (
 	github.com/ThingsIXFoundation/frequency-plan/go v0.0.0-20221031153149-5c3c9946d37f
 	github.com/ThingsIXFoundation/gateway-registry-go v1.0.0
 	github.com/ThingsIXFoundation/h3-light v0.0.0-20230202175737-5a4dd96d2990
+	github.com/ThingsIXFoundation/mapper-registry-go v0.0.0-20230207125540-21fbd2a4f29d
+	github.com/ThingsIXFoundation/router-registry-go v1.1.0
 	github.com/aws/aws-sdk-go-v2/config v1.18.11
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.10
 	github.com/go-chi/chi/v5 v5.0.8

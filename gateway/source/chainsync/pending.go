@@ -7,8 +7,6 @@ import (
 
 	"github.com/ThingsIXFoundation/data-aggregator/chainsync"
 	"github.com/ThingsIXFoundation/data-aggregator/config"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
-	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	gateway_registry "github.com/ThingsIXFoundation/gateway-registry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -115,46 +113,19 @@ func (cs *ChainSync) handlePending(ctx context.Context) error {
 			if !ok {
 				return fmt.Errorf("unable to retrieve pending gateway logs")
 			}
-			if event := decodeLogToGatewayEvent(&l); event != nil {
-				// The GatewayUpdated event doesn't contain the gateway details. So fetch the gateway details before and after the update
-				// and include them in the event
-				if event.Type == types.GatewayUpdatedEvent {
-					gatewayBefore, err := gatewayDetails(gatewayRegistry, cs.contractAddress, l.BlockNumber-1, event.GatewayID)
-					if err != nil {
-						logrus.WithError(err).Error("error while getting before-update gateway details")
-						return err
-					}
-					gatewayAfter, err := gatewayDetails(gatewayRegistry, cs.contractAddress, l.BlockNumber, event.GatewayID)
-					if err != nil {
-						logrus.WithError(err).Error("error while getting updated gateway details")
-						return err
-					}
 
-					event.OldOwner = utils.Ptr(gatewayBefore.Owner)
-					event.OldFrequencyPlan = gatewayBefore.FrequencyPlan
-					event.OldAltitude = gatewayBefore.Altitude
-					event.OldLocation = gatewayBefore.Location
-					event.OldAntennaGain = gatewayBefore.AntennaGain
-
-					event.NewOwner = utils.Ptr(gatewayAfter.Owner)
-					event.NewFrequencyPlan = gatewayAfter.FrequencyPlan
-					event.NewAltitude = gatewayAfter.Altitude
-					event.NewLocation = gatewayAfter.Location
-					event.NewAntennaGain = gatewayAfter.AntennaGain
-				}
-
-				eventTime, err := chainsync.BlockTime(ctx, client, event.BlockNumber)
-				if err != nil {
-					logrus.WithError(err).Error("error while getting time of block")
-					return err
-				}
-				event.ContractAddress = cs.contractAddress
-				event.Time = eventTime
-
-				cs.pendingEventFunc(ctx, event)
-
+			event, err := decodeLogToGatewayEvent(ctx, &l, client, gatewayRegistry, cs.contractAddress)
+			if err != nil {
+				logrus.WithError(err).Error("error while processing pending gateway events")
+				return err
+			}
+			if event == nil {
 				return nil
 			}
+
+			cs.pendingEventFunc(ctx, event)
+
+			return nil
 		}
 	}
 }

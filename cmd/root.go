@@ -2,19 +2,22 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 
+	"github.com/ThingsIXFoundation/data-aggregator/api"
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/gateway"
+	"github.com/ThingsIXFoundation/data-aggregator/mapper"
+	"github.com/ThingsIXFoundation/data-aggregator/router"
+	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-
-var cfgFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "data-aggregator",
@@ -76,14 +79,59 @@ func Run(cmd *cobra.Command, args []string) {
 		sign          = make(chan os.Signal, 1)
 	)
 
+	gatewayErr := make(chan error)
 	go func() {
-		gateway.Run(ctx)
+		defer close(gatewayErr)
+		if err := gateway.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			logrus.WithError(err).Error("gateway functions failed")
+			gatewayErr <- err
+		}
+	}()
+
+	routerErr := make(chan error)
+	go func() {
+		defer close(routerErr)
+		router.Run(ctx)
+		if err := router.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			logrus.WithError(err).Error("router functions failed")
+			routerErr <- err
+		}
+	}()
+
+	mapperErr := make(chan error)
+	go func() {
+		defer close(mapperErr)
+		mapper.Run(ctx)
+		if err := mapper.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			logrus.WithError(err).Error("mapper functions failed")
+			mapperErr <- err
+		}
+	}()
+
+	apiErr := make(chan error)
+	go func() {
+		defer close(apiErr)
+		api.Run(ctx)
+		if err := api.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			logrus.WithError(err).Error("api functions failed")
+			apiErr <- err
+		}
 	}()
 
 	signal.Notify(sign, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	select {
 	case <-sign:
 		shutdown()
+	case <-gatewayErr:
+		shutdown()
+	case <-routerErr:
+		shutdown()
+	case <-mapperErr:
+		shutdown()
+	case <-apiErr:
+		shutdown()
 	}
+
+	utils.WaitForChannelsToClose(gatewayErr, routerErr, mapperErr, apiErr)
 
 }

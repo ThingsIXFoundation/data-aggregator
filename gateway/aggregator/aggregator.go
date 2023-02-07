@@ -25,7 +25,7 @@ func NewGatewayAggregator() (*GatewayAggregator, error) {
 	}
 
 	return &GatewayAggregator{
-		contractAddress: common.HexToAddress(viper.GetString(config.CONFIG_GATEAWAY_CONTRACT)),
+		contractAddress: common.HexToAddress(viper.GetString(config.CONFIG_GATEWAY_CONTRACT)),
 		store:           store,
 	}, nil
 }
@@ -102,6 +102,10 @@ func (ga *GatewayAggregator) getFirstBlock(ctx context.Context) (uint64, error) 
 	if err != nil {
 		return 0, err
 	}
+	if event == nil {
+		return 0, nil
+	}
+
 	return event.BlockNumber, nil
 }
 
@@ -134,7 +138,7 @@ func (ga *GatewayAggregator) aggregateTo(ctx context.Context, from uint64) (uint
 		return 0, false, err
 	}
 
-	if iblock == 0 && gblock == 0 {
+	if iblock == 0 && gblock == 0 || from == 0 {
 		logrus.Infof("no gateway-events found, waiting for first events")
 		return 0, false, nil
 	}
