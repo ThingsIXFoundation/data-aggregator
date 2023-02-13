@@ -6,7 +6,7 @@ import (
 	"github.com/ThingsIXFoundation/data-aggregator/mapper/source/chainsync"
 	source_interface "github.com/ThingsIXFoundation/data-aggregator/mapper/source/interfac"
 	"github.com/ThingsIXFoundation/data-aggregator/mapper/store"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,7 +42,7 @@ func (gi *MapperIngestor) Run(ctx context.Context) error {
 func (gi *MapperIngestor) PendingEventFunc(ctx context.Context, pendingEvent *types.MapperEvent) error {
 	logrus.WithFields(logrus.Fields{
 		"contract": pendingEvent.ContractAddress,
-		"mapper":   pendingEvent.MapperID,
+		"mapper":   pendingEvent.ID,
 		"type":     pendingEvent.Type,
 		"block":    pendingEvent.BlockNumber,
 	}).Info("ingesting pending mapper event")
@@ -53,7 +53,7 @@ func (gi *MapperIngestor) EventsFunc(ctx context.Context, events []*types.Mapper
 	for _, event := range events {
 		logrus.WithFields(logrus.Fields{
 			"contract": event.ContractAddress,
-			"mapper":   event.MapperID,
+			"mapper":   event.ID,
 			"type":     event.Type,
 			"block":    event.BlockNumber,
 		}).Info("ingesting mapper event")

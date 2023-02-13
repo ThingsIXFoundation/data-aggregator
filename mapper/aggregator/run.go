@@ -16,7 +16,10 @@ func Run(ctx context.Context) error {
 			return err
 		}
 
-		ga.Run(ctx)
+		err = ga.Run(ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	<-ctx.Done()

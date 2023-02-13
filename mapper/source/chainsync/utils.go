@@ -6,10 +6,10 @@ import (
 	"math/big"
 
 	"github.com/ThingsIXFoundation/data-aggregator/chainsync"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	mapper_registry "github.com/ThingsIXFoundation/mapper-registry-go"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	etypes "github.com/ethereum/go-ethereum/core/types"
@@ -40,8 +40,8 @@ func decodeLogToMapperEvent(ctx context.Context, log *etypes.Log, client *ethcli
 	switch log.Topics[0] {
 	case MapperRegisteredEvent:
 		event.Type = types.MapperRegisteredEvent
-		event.MapperID = types.ID(log.Topics[1])
-		mapper, err := mapperDetails(mapperRegistry, contractAddress, log.BlockNumber, event.MapperID)
+		event.ID = types.ID(log.Topics[1])
+		mapper, err := mapperDetails(mapperRegistry, contractAddress, log.BlockNumber, event.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -49,16 +49,16 @@ func decodeLogToMapperEvent(ctx context.Context, log *etypes.Log, client *ethcli
 		event.FrequencyPlan = mapper.FrequencyPlan
 	case MapperOnboardedEvent:
 		event.Type = types.MapperOnboardedEvent
-		event.MapperID = types.ID(log.Topics[1])
+		event.ID = types.ID(log.Topics[1])
 		event.NewOwner = utils.Ptr(common.BytesToAddress(log.Topics[2].Bytes()))
 	case MapperClaimedEvent:
 		event.Type = types.MapperClaimedEvent
-		event.MapperID = types.ID(log.Topics[1])
-		oldMapper, err := mapperDetails(mapperRegistry, contractAddress, log.BlockNumber-1, event.MapperID)
+		event.ID = types.ID(log.Topics[1])
+		oldMapper, err := mapperDetails(mapperRegistry, contractAddress, log.BlockNumber-1, event.ID)
 		if err != nil {
 			return nil, err
 		}
-		newMapper, err := mapperDetails(mapperRegistry, contractAddress, log.BlockNumber, event.MapperID)
+		newMapper, err := mapperDetails(mapperRegistry, contractAddress, log.BlockNumber, event.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -66,16 +66,16 @@ func decodeLogToMapperEvent(ctx context.Context, log *etypes.Log, client *ethcli
 		event.NewOwner = newMapper.Owner
 	case MapperRemovedEvent:
 		event.Type = types.MapperRemovedEvent
-		event.MapperID = types.ID(log.Topics[1])
+		event.ID = types.ID(log.Topics[1])
 	case MapperDeactivatedEvent:
 		event.Type = types.MapperDeactivated
-		event.MapperID = types.ID(log.Topics[1])
+		event.ID = types.ID(log.Topics[1])
 	case MapperActivatedEvent:
 		event.Type = types.MapperActivated
-		event.MapperID = types.ID(log.Topics[1])
+		event.ID = types.ID(log.Topics[1])
 	case MapperTransferredEvent:
 		event.Type = types.MapperTransfered
-		event.MapperID = types.ID(log.Topics[1])
+		event.ID = types.ID(log.Topics[1])
 		event.OldOwner = utils.Ptr(common.BytesToAddress(log.Topics[2].Bytes()))
 		event.NewOwner = utils.Ptr(common.BytesToAddress(log.Topics[3].Bytes()))
 	default:

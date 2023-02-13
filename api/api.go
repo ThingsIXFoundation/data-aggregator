@@ -25,26 +25,36 @@ type API struct {
 }
 
 func NewAPI() (*API, error) {
-	gatewayAPI, err := gatewayapi.NewGatewayAPI()
-	if err != nil {
-		return nil, err
+	api := &API{}
+
+	if viper.GetBool(config.CONFIG_GATEWAY_API_ENABLED) {
+		gatewayAPI, err := gatewayapi.NewGatewayAPI()
+		if err != nil {
+			return nil, err
+		}
+
+		api.gatewayAPI = gatewayAPI
 	}
 
-	mapperAPI, err := mapperapi.NewMapperAPI()
-	if err != nil {
-		return nil, err
+	if viper.GetBool(config.CONFIG_MAPPER_API_ENABLED) {
+		mapperAPI, err := mapperapi.NewMapperAPI()
+		if err != nil {
+			return nil, err
+		}
+
+		api.mapperAPI = mapperAPI
 	}
 
-	routerAPI, err := routerapi.NewRouterAPI()
-	if err != nil {
-		return nil, err
+	if viper.GetBool(config.CONFIG_ROUTER_API_ENABLED) {
+		routerAPI, err := routerapi.NewRouterAPI()
+		if err != nil {
+			return nil, err
+		}
+
+		api.routerAPI = routerAPI
 	}
 
-	return &API{
-		gatewayAPI: gatewayAPI,
-		routerAPI:  routerAPI,
-		mapperAPI:  mapperAPI,
-	}, nil
+	return api, nil
 
 }
 
@@ -69,9 +79,17 @@ func (a *API) Serve(ctx context.Context) chan error {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	a.gatewayAPI.Bind(root)
-	a.routerAPI.Bind(root)
-	a.mapperAPI.Bind(root)
+	if a.gatewayAPI != nil {
+		a.gatewayAPI.Bind(root)
+	}
+
+	if a.routerAPI != nil {
+		a.routerAPI.Bind(root)
+	}
+
+	if a.mapperAPI != nil {
+		a.mapperAPI.Bind(root)
+	}
 
 	stopped := make(chan error)
 	go func() {

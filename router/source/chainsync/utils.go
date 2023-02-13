@@ -6,9 +6,9 @@ import (
 	"math/big"
 
 	"github.com/ThingsIXFoundation/data-aggregator/chainsync"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	router_registry "github.com/ThingsIXFoundation/router-registry-go"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	etypes "github.com/ethereum/go-ethereum/core/types"
@@ -28,9 +28,9 @@ func decodeLogToRouterEvent(ctx context.Context, log *etypes.Log, client *ethcli
 	switch log.Topics[0] {
 	case RouterRegisterEvent:
 		event.Type = types.RouterRegisteredEvent
-		event.RouterID = types.ID(log.Topics[1])
+		event.ID = types.ID(log.Topics[1])
 
-		router, err := routerDetails(routerRegistry, contractAddress, log.BlockNumber, event.RouterID)
+		router, err := routerDetails(routerRegistry, contractAddress, log.BlockNumber, event.ID)
 		if err != nil {
 			logrus.WithError(err).Error("error while getting added router details")
 			return nil, err
@@ -43,12 +43,12 @@ func decodeLogToRouterEvent(ctx context.Context, log *etypes.Log, client *ethcli
 		event.NewEndpoint = router.Endpoint
 
 	case RouterUpdateEvent:
-		routerBefore, err := routerDetails(routerRegistry, contractAddress, log.BlockNumber-1, event.RouterID)
+		routerBefore, err := routerDetails(routerRegistry, contractAddress, log.BlockNumber-1, event.ID)
 		if err != nil {
 			logrus.WithError(err).Error("error while getting before-update router details")
 			return nil, err
 		}
-		routerAfter, err := routerDetails(routerRegistry, contractAddress, log.BlockNumber, event.RouterID)
+		routerAfter, err := routerDetails(routerRegistry, contractAddress, log.BlockNumber, event.ID)
 		if err != nil {
 			logrus.WithError(err).Error("error while getting updated router details")
 			return nil, err
@@ -68,7 +68,7 @@ func decodeLogToRouterEvent(ctx context.Context, log *etypes.Log, client *ethcli
 
 	case RouterRemovedEvent:
 		event.Type = types.RouterRemovedEvent
-		event.RouterID = types.ID(log.Topics[1])
+		event.ID = types.ID(log.Topics[1])
 
 	default:
 		logrus.WithFields(logrus.Fields{

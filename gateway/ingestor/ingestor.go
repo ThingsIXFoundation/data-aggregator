@@ -6,7 +6,7 @@ import (
 	"github.com/ThingsIXFoundation/data-aggregator/gateway/source/chainsync"
 	source_interface "github.com/ThingsIXFoundation/data-aggregator/gateway/source/interfac"
 	"github.com/ThingsIXFoundation/data-aggregator/gateway/store"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,7 +42,7 @@ func (gi *GatewayIngestor) Run(ctx context.Context) error {
 func (gi *GatewayIngestor) PendingEventFunc(ctx context.Context, pendingEvent *types.GatewayEvent) error {
 	logrus.WithFields(logrus.Fields{
 		"contract": pendingEvent.ContractAddress,
-		"gateway":  pendingEvent.GatewayID,
+		"gateway":  pendingEvent.ID,
 		"type":     pendingEvent.Type,
 		"block":    pendingEvent.BlockNumber,
 	}).Info("ingesting pending gateway event")
@@ -53,7 +53,7 @@ func (gi *GatewayIngestor) EventsFunc(ctx context.Context, events []*types.Gatew
 	for _, event := range events {
 		logrus.WithFields(logrus.Fields{
 			"contract": event.ContractAddress,
-			"gateway":  event.GatewayID,
+			"gateway":  event.ID,
 			"type":     event.Type,
 			"block":    event.BlockNumber,
 		}).Info("ingesting gateway event")

@@ -7,7 +7,7 @@ import (
 
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/router/store"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -157,13 +157,13 @@ func (ga *RouterAggregator) aggregateTo(ctx context.Context, from uint64) (uint6
 func (ga *RouterAggregator) processEvent(ctx context.Context, event *types.RouterEvent) error {
 	logrus.WithFields(logrus.Fields{
 		"contract": event.ContractAddress,
-		"router":   event.RouterID,
+		"router":   event.ID,
 		"type":     event.Type,
 		"block":    event.BlockNumber,
 	}).Info("aggregating router event")
 
 	// Try to get router just before event
-	routerHistory, err := ga.store.GetHistoryAt(ctx, event.RouterID, event.Time.Add(-1*time.Millisecond))
+	routerHistory, err := ga.store.GetHistoryAt(ctx, event.ID, event.Time.Add(-1*time.Millisecond))
 	if err != nil {
 		return err
 	}
@@ -172,7 +172,7 @@ func (ga *RouterAggregator) processEvent(ctx context.Context, event *types.Route
 	case types.RouterRegisteredEvent:
 		if routerHistory == nil {
 			routerHistory = &types.RouterHistory{
-				ID:              event.RouterID,
+				ID:              event.ID,
 				ContractAddress: event.ContractAddress,
 			}
 		}

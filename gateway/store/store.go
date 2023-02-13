@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/ThingsIXFoundation/data-aggregator/config"
-	"github.com/ThingsIXFoundation/data-aggregator/gateway/store/dynamodb"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
+	"github.com/ThingsIXFoundation/data-aggregator/gateway/store/clouddatastore"
 	h3light "github.com/ThingsIXFoundation/h3-light"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/viper"
 )
@@ -25,7 +25,7 @@ type Store interface {
 	StoreEvent(ctx context.Context, event *types.GatewayEvent) error
 	EventsFromTo(ctx context.Context, from, to uint64) ([]*types.GatewayEvent, error)
 	FirstEvent(ctx context.Context) (*types.GatewayEvent, error)
-	GetEvents(ctx context.Context, gatewayID types.ID) ([]*types.GatewayEvent, error)
+	GetEvents(ctx context.Context, gatewayID types.ID, limit int, cursor string) ([]*types.GatewayEvent, string, error)
 
 	StoreHistory(ctx context.Context, history *types.GatewayHistory) error
 	GetHistoryAt(ctx context.Context, id types.ID, at time.Time) (*types.GatewayHistory, error)
@@ -33,7 +33,8 @@ type Store interface {
 	Store(ctx context.Context, gateway *types.Gateway) error
 	Delete(ctx context.Context, id types.ID) error
 	Get(ctx context.Context, id types.ID) (*types.Gateway, error)
-	GetByOwner(ctx context.Context, owner common.Address) ([]*types.Gateway, error)
+	GetByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*types.Gateway, string, error)
+	GetAll(ctx context.Context) ([]*types.Gateway, error)
 
 	GetRes3CountPerRes0(ctx context.Context) (map[h3light.Cell]map[h3light.Cell]uint64, error)
 	GetCountInCellAtRes(ctx context.Context, cell h3light.Cell, res int) (map[h3light.Cell]uint64, error)
@@ -41,8 +42,9 @@ type Store interface {
 }
 
 func NewStore() (Store, error) {
-	if viper.GetString(config.CONFIG_GATEWAY_STORE) == "dynamodb" {
-		return dynamodb.NewStore()
+	store := viper.GetString(config.CONFIG_GATEWAY_STORE)
+	if store == "clouddatastore" {
+		return clouddatastore.NewStore(context.Background())
 	} else {
 		return nil, fmt.Errorf("invalid store type: %s", viper.GetString(config.CONFIG_GATEWAY_STORE))
 	}

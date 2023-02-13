@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/ThingsIXFoundation/data-aggregator/config"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
+	"github.com/ThingsIXFoundation/types"
 )
 
 func (gapi *GatewayAPI) PendingGatewayEvents(w http.ResponseWriter, r *http.Request) {

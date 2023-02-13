@@ -7,7 +7,7 @@ import (
 
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/gateway/store"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -44,7 +44,7 @@ func (ga *GatewayAggregator) Run(ctx context.Context) error {
 			for {
 				synced, err := ga.aggregate(ctx)
 				if err != nil {
-					logrus.WithError(err).Warn("unable to integrate gateway events")
+					logrus.WithError(err).Warn("unable to aggregate gateway events")
 					break
 				}
 				if synced {
@@ -140,7 +140,7 @@ func (ga *GatewayAggregator) aggregateTo(ctx context.Context, from uint64) (uint
 
 	if iblock == 0 && gblock == 0 || from == 0 {
 		logrus.Infof("no gateway-events found, waiting for first events")
-		return 0, false, nil
+		return 0, true, nil
 	}
 
 	if iblock < gblock {
@@ -158,13 +158,13 @@ func (ga *GatewayAggregator) aggregateTo(ctx context.Context, from uint64) (uint
 func (ga *GatewayAggregator) processEvent(ctx context.Context, event *types.GatewayEvent) error {
 	logrus.WithFields(logrus.Fields{
 		"contract": event.ContractAddress,
-		"gateway":  event.GatewayID,
+		"gateway":  event.ID,
 		"type":     event.Type,
 		"block":    event.BlockNumber,
 	}).Info("aggregating gateway event")
 
 	// Try to get gateway just before event
-	gatewayHistory, err := ga.store.GetHistoryAt(ctx, event.GatewayID, event.Time.Add(-1*time.Millisecond))
+	gatewayHistory, err := ga.store.GetHistoryAt(ctx, event.ID, event.Time.Add(-1*time.Millisecond))
 	if err != nil {
 		return err
 	}
@@ -173,7 +173,7 @@ func (ga *GatewayAggregator) processEvent(ctx context.Context, event *types.Gate
 	case types.GatewayOnboardedEvent:
 		if gatewayHistory == nil {
 			gatewayHistory = &types.GatewayHistory{
-				ID:              event.GatewayID,
+				ID:              event.ID,
 				ContractAddress: event.ContractAddress,
 				Version:         event.Version,
 			}

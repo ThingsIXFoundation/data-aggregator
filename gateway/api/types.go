@@ -1,6 +1,6 @@
 package api
 
-import "github.com/ThingsIXFoundation/data-aggregator/types"
+import "github.com/ThingsIXFoundation/types"
 
 type GatewayHexInfo struct {
 	Count    int             `json:"count"`

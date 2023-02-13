@@ -16,7 +16,10 @@ func Run(ctx context.Context) error {
 			return err
 		}
 
-		ri.Run(ctx)
+		err = ri.Run(ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	<-ctx.Done()

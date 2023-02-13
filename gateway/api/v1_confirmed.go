@@ -6,53 +6,45 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ThingsIXFoundation/data-aggregator/types"
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-chi/chi/v5"
 )
 
-func replyGatewaysPaged(gateways []*types.Gateway, pageSize int, w http.ResponseWriter, r *http.Request) {
-	if gateways == nil {
-		gateways = make([]*types.Gateway, 0) // prevent null in reply
+func replyEventsCursor(events []*types.GatewayEvent, cursor string, w http.ResponseWriter, r *http.Request) {
+	if cursor != "" {
+		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
+			"cursor": cursor,
+			"events": events,
+		})
+	} else {
+		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
+			"events": events,
+		})
 	}
-
-	// trim results if there are more than requested
-	moreAvailable := len(gateways) > pageSize
-	if moreAvailable {
-		gateways = gateways[:pageSize]
-	}
-
-	encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-		"moreAvailable": moreAvailable,
-		"gateways":      gateways,
-	})
 }
 
-func replyEventsPaged(events []*types.GatewayEvent, pageSize int, w http.ResponseWriter, r *http.Request) {
-	if events == nil {
-		events = make([]*types.GatewayEvent, 0) // prevent null in reply
+func replyGatewaysCursor(gateways []*types.Gateway, cursor string, w http.ResponseWriter, r *http.Request) {
+	if cursor != "" {
+		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
+			"cursor":   cursor,
+			"gateways": gateways,
+		})
+	} else {
+		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
+			"gateways": gateways,
+		})
 	}
-
-	// trim results if there are more than requested
-	moreAvailable := len(events) > pageSize
-	if moreAvailable {
-		events = events[:pageSize]
-	}
-
-	encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-		"moreAvailable": moreAvailable,
-		"events":        events,
-	})
 }
 
 func (gapi *GatewayAPI) OwnedGateways(w http.ResponseWriter, r *http.Request) {
 	var (
 		log         = logging.WithContext(r.Context())
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
-		page, _     = strconv.Atoi(r.URL.Query().Get("page"))
+		cursor      = r.URL.Query().Get("cursor")
 		pageSize, _ = strconv.Atoi(r.URL.Query().Get("pageSize"))
 		owner       = common.HexToAddress(chi.URLParam(r, "owner"))
 	)
@@ -62,16 +54,14 @@ func (gapi *GatewayAPI) OwnedGateways(w http.ResponseWriter, r *http.Request) {
 		pageSize = 15
 	}
 
-	gateways, err := gapi.store.GetByOwner(ctx, owner)
+	gateways, cursor, err := gapi.store.GetByOwner(ctx, owner, pageSize, cursor)
 	if err != nil {
 		log.WithError(err).Error("unable to retrieve gateways from DB")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	gateways = utils.Paginate(gateways, page, pageSize, 1)
-
-	replyGatewaysPaged(gateways, pageSize, w, r)
+	replyGatewaysCursor(gateways, cursor, w, r)
 }
 
 func (gapi *GatewayAPI) GatewayDetailsByID(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +91,7 @@ func (gapi *GatewayAPI) GatewayEventsByID(w http.ResponseWriter, r *http.Request
 	var (
 		log         = logging.WithContext(r.Context())
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
-		page, _     = strconv.Atoi(r.URL.Query().Get("page"))
+		cursor      = r.URL.Query().Get("cursor")
 		pageSize, _ = strconv.Atoi(r.URL.Query().Get("pageSize"))
 		gatewayID   = utils.IDFromRequest(r, "id")
 	)
@@ -111,14 +101,12 @@ func (gapi *GatewayAPI) GatewayEventsByID(w http.ResponseWriter, r *http.Request
 		pageSize = 15
 	}
 
-	events, err := gapi.store.GetEvents(ctx, gatewayID)
+	events, cursor, err := gapi.store.GetEvents(ctx, gatewayID, pageSize, cursor)
 	if err != nil {
 		log.WithError(err).Error("error while getting gateway events")
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
-	events = utils.Paginate(events, page, pageSize, 1)
-
-	replyEventsPaged(events, pageSize, w, r)
+	replyEventsCursor(events, cursor, w, r)
 }

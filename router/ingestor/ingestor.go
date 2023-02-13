@@ -6,7 +6,7 @@ import (
 	"github.com/ThingsIXFoundation/data-aggregator/router/source/chainsync"
 	source_interface "github.com/ThingsIXFoundation/data-aggregator/router/source/interfac"
 	"github.com/ThingsIXFoundation/data-aggregator/router/store"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,7 +42,7 @@ func (gi *RouterIngestor) Run(ctx context.Context) error {
 func (gi *RouterIngestor) PendingEventFunc(ctx context.Context, pendingEvent *types.RouterEvent) error {
 	logrus.WithFields(logrus.Fields{
 		"contract": pendingEvent.ContractAddress,
-		"router":   pendingEvent.RouterID,
+		"router":   pendingEvent.ID,
 		"type":     pendingEvent.Type,
 		"block":    pendingEvent.BlockNumber,
 	}).Info("ingesting pending router event")
@@ -53,7 +53,7 @@ func (gi *RouterIngestor) EventsFunc(ctx context.Context, events []*types.Router
 	for _, event := range events {
 		logrus.WithFields(logrus.Fields{
 			"contract": event.ContractAddress,
-			"router":   event.RouterID,
+			"router":   event.ID,
 			"type":     event.Type,
 			"block":    event.BlockNumber,
 		}).Info("ingesting router event")

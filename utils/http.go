@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"net/http"
 
-	"github.com/ThingsIXFoundation/data-aggregator/types"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/go-chi/chi/v5"
 )
 

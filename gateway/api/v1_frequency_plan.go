@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	"github.com/ThingsIXFoundation/data-aggregator/types"
 	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	"github.com/ThingsIXFoundation/http-utils/encoding"
+	"github.com/ThingsIXFoundation/types"
 )
 
 var (

@@ -8,8 +8,8 @@ import (
 
 	"github.com/ThingsIXFoundation/data-aggregator/chainsync"
 	"github.com/ThingsIXFoundation/data-aggregator/config"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
 	mapper_registry "github.com/ThingsIXFoundation/mapper-registry-go"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"

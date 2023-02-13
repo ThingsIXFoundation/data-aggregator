@@ -6,11 +6,11 @@ import (
 	"math/big"
 
 	"github.com/ThingsIXFoundation/data-aggregator/chainsync"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
 	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	gateway_registry "github.com/ThingsIXFoundation/gateway-registry-go"
 	h3light "github.com/ThingsIXFoundation/h3-light"
 	"github.com/ThingsIXFoundation/packet-handling/utils"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	etypes "github.com/ethereum/go-ethereum/core/types"
@@ -30,9 +30,9 @@ func decodeLogToGatewayEvent(ctx context.Context, log *etypes.Log, client *ethcl
 	switch log.Topics[0] {
 	case GatewayOnboardedEvent:
 		event.Type = types.GatewayOnboardedEvent
-		event.GatewayID = types.ID(log.Topics[1])
+		event.ID = types.ID(log.Topics[1])
 		event.NewOwner = utils.Ptr(common.BytesToAddress(log.Topics[2].Bytes()))
-		gateway, err := gatewayDetails(gatewayRegistry, contractAddress, log.BlockNumber, event.GatewayID)
+		gateway, err := gatewayDetails(gatewayRegistry, contractAddress, log.BlockNumber, event.ID)
 		if err != nil {
 			logrus.WithError(err).Error("error while getting added gateway details")
 			return nil, err
@@ -41,17 +41,17 @@ func decodeLogToGatewayEvent(ctx context.Context, log *etypes.Log, client *ethcl
 
 	case GatewayOffboardedEvent:
 		event.Type = types.GatewayOffboardedEvent
-		event.GatewayID = types.ID(log.Topics[1])
+		event.ID = types.ID(log.Topics[1])
 
 	case GatewayUpdatedEvent:
 		event.Type = types.GatewayUpdatedEvent
-		event.GatewayID = types.ID(log.Topics[1])
-		gatewayBefore, err := gatewayDetails(gatewayRegistry, contractAddress, log.BlockNumber-1, event.GatewayID)
+		event.ID = types.ID(log.Topics[1])
+		gatewayBefore, err := gatewayDetails(gatewayRegistry, contractAddress, log.BlockNumber-1, event.ID)
 		if err != nil {
 			logrus.WithError(err).Error("error while getting before-update gateway details")
 			return nil, err
 		}
-		gatewayAfter, err := gatewayDetails(gatewayRegistry, contractAddress, log.BlockNumber, event.GatewayID)
+		gatewayAfter, err := gatewayDetails(gatewayRegistry, contractAddress, log.BlockNumber, event.ID)
 		if err != nil {
 			logrus.WithError(err).Error("error while getting updated gateway details")
 			return nil, err
@@ -71,7 +71,7 @@ func decodeLogToGatewayEvent(ctx context.Context, log *etypes.Log, client *ethcl
 
 	case GatewayTransferredEvent:
 		event.Type = types.GatewayTransferredEvent
-		event.GatewayID = types.ID(log.Topics[1])
+		event.ID = types.ID(log.Topics[1])
 		event.OldOwner = utils.Ptr(common.BytesToAddress(log.Topics[2].Bytes()))
 		event.NewOwner = utils.Ptr(common.BytesToAddress(log.Topics[3].Bytes()))
 

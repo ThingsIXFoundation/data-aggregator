@@ -1,6 +1,6 @@
 package api
 
-import "github.com/ThingsIXFoundation/data-aggregator/types"
+import "github.com/ThingsIXFoundation/types"
 
 type PendingMapperEventsResponse struct {
 	Confirmations uint64               `json:"confirmations"`

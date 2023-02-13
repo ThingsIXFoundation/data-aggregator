@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/ThingsIXFoundation/data-aggregator/chainsync"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
+	"github.com/ThingsIXFoundation/types"
 )
 
 type PendingEventFunc func(context.Context, *types.GatewayEvent) error

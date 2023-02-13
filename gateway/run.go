@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/ThingsIXFoundation/data-aggregator/gateway/aggregator"
+	"github.com/ThingsIXFoundation/data-aggregator/gateway/cacher"
 	"github.com/ThingsIXFoundation/data-aggregator/gateway/ingestor"
 	"github.com/sirupsen/logrus"
 )
@@ -29,10 +30,21 @@ func Run(ctx context.Context) error {
 		}
 	}()
 
+	cacherErr := make(chan error)
+	go func() {
+		defer close(cacherErr)
+		if err := cacher.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			logrus.WithError(err).Error("gateway cacher failed")
+			cacherErr <- err
+		}
+	}()
+
 	select {
 	case err := <-ingestorErr:
 		return err
 	case err := <-aggregatorErr:
+		return err
+	case err := <-cacherErr:
 		return err
 	}
 }

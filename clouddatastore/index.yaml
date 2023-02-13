@@ -1,0 +1,14 @@
+indexes:
+
+- kind: GatewayHistory
+  properties:
+    - name: ID
+    - name: Time
+- kind: MapperHistory
+  properties:
+    - name: ID
+    - name: Time
+- kind: RouterHistory
+  properties:
+    - name: ID
+    - name: Time

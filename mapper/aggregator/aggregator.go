@@ -7,8 +7,8 @@ import (
 
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/mapper/store"
-	"github.com/ThingsIXFoundation/data-aggregator/types"
 	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -141,7 +141,7 @@ func (ma *MapperAggregator) aggregateTo(ctx context.Context, from uint64) (uint6
 
 	if iblock == 0 && gblock == 0 || from == 0 {
 		logrus.Infof("no mapper-events found, waiting for first events")
-		return 0, false, nil
+		return 0, true, nil
 	}
 
 	if iblock < gblock {
@@ -159,13 +159,13 @@ func (ma *MapperAggregator) aggregateTo(ctx context.Context, from uint64) (uint6
 func (ma *MapperAggregator) processEvent(ctx context.Context, event *types.MapperEvent) error {
 	logrus.WithFields(logrus.Fields{
 		"contract": event.ContractAddress,
-		"mapper":   event.MapperID,
+		"mapper":   event.ID,
 		"type":     event.Type,
 		"block":    event.BlockNumber,
 	}).Info("aggregating mapper event")
 
 	// Try to get mapper just before event
-	mapperHistory, err := ma.store.GetHistoryAt(ctx, event.MapperID, event.Time.Add(-1*time.Millisecond))
+	mapperHistory, err := ma.store.GetHistoryAt(ctx, event.ID, event.Time.Add(-1*time.Millisecond))
 	if err != nil {
 		return err
 	}
@@ -174,7 +174,7 @@ func (ma *MapperAggregator) processEvent(ctx context.Context, event *types.Mappe
 	case types.MapperRegisteredEvent:
 		if mapperHistory == nil {
 			mapperHistory = &types.MapperHistory{
-				ID:              event.MapperID,
+				ID:              event.ID,
 				ContractAddress: event.ContractAddress,
 				Revision:        event.Revision,
 				FrequencyPlan:   event.FrequencyPlan,
