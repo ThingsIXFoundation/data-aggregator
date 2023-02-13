@@ -1,3 +1,19 @@
+// Copyright 2023 Stichting ThingsIX Foundation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package cacher
 
 import (
@@ -49,12 +65,9 @@ func (gc *GatewayCacher) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-time.After(pollInterval):
-			for {
-				err := gc.cache(ctx)
-				if err != nil {
-					logrus.WithError(err).Warn("unable to cache gateway state")
-					break
-				}
+			err := gc.cache(ctx)
+			if err != nil {
+				logrus.WithError(err).Warn("unable to cache gateway state")
 			}
 		case <-ctx.Done():
 			return ctx.Err()
@@ -63,6 +76,7 @@ func (gc *GatewayCacher) Run(ctx context.Context) error {
 }
 
 func (gc *GatewayCacher) cache(ctx context.Context) error {
+	logrus.Info("caching gateway state")
 	gateways, err := gc.store.GetAll(ctx)
 	if err != nil {
 		return err

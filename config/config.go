@@ -1,3 +1,19 @@
+// Copyright 2023 Stichting ThingsIX Foundation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package config
 
 import (
@@ -54,6 +70,9 @@ const (
 
 	CONFIG_MAPPER_CONTRACT                        = "mapper.contract"
 	CONFIG_MAPPER_API_ENABLED                     = "mapper.api.enabled"
+	CONFIG_MAPPER_CACHER_ENABLED                  = "mapper.cacher.enabled"
+	CONFIG_MAPPER_CACHER_UPDATE_INTERVAL          = "mapper.cacher.update-interval"
+	CONFIG_MAPPER_CACHER_REDIS_HOST               = "mapper.cacher.redis-host"
 	CONFIG_MAPPER_AGGREGATOR_POLL_INTERVAL        = "mapper.aggregator.poll-interval"
 	CONFIG_MAPPER_AGGREGATOR_ENABLED              = "mapper.aggregator.enabled"
 	CONFIG_MAPPER_AGGREGATOR_MAX_BLOCK_SCAN_RANGE = "mapper.aggregator.max-block-scan-range"
@@ -107,6 +126,9 @@ func PersistentFlags(flags *pflag.FlagSet) {
 
 	flags.String(CONFIG_MAPPER_CONTRACT, "", "the address of the mapper registry contract")
 	flags.Bool(CONFIG_MAPPER_API_ENABLED, true, "enable the API for mappers")
+	flags.Bool(CONFIG_MAPPER_CACHER_ENABLED, false, "enable the cache of mapper state")
+	flags.Duration(CONFIG_MAPPER_CACHER_UPDATE_INTERVAL, 10*time.Minute, "the time to update the mapper cache in")
+	flags.String(CONFIG_MAPPER_CACHER_REDIS_HOST, "", "the redis host to use for the cache")
 	flags.Bool(CONFIG_MAPPER_AGGREGATOR_ENABLED, true, "enable the aggregation of mapper events")
 	flags.Duration(CONFIG_MAPPER_AGGREGATOR_POLL_INTERVAL, 1*time.Minute, "the interval to poll the store for new events to integrate")
 	flags.Uint64(CONFIG_MAPPER_AGGREGATOR_MAX_BLOCK_SCAN_RANGE, 100000, "the number of blocks to scan at most at once")
