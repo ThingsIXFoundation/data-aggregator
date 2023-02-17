@@ -217,7 +217,7 @@ func (s *Store) StoreEvent(ctx context.Context, event *types.MapperEvent) error 
 	_, err := s.client.Put(ctx, clouddatastore.GetKey(&dbevent), &dbevent)
 
 	if err != nil {
-		logrus.WithError(err).Errorf("error while storing mapper event in DynamoDB")
+		logrus.WithError(err).Errorf("error while storing mapper event in gcloud datastore")
 		return err
 	}
 
@@ -231,7 +231,7 @@ func (s *Store) StorePendingEvent(ctx context.Context, pendingEvent *types.Mappe
 	_, err := s.client.Put(ctx, clouddatastore.GetKey(&dbevent), &dbevent)
 
 	if err != nil {
-		logrus.WithError(err).Errorf("error while storing pending mapper event in DynamoDB")
+		logrus.WithError(err).Errorf("error while storing pending mapper event in gcloud datastore")
 		return err
 	}
 
@@ -243,7 +243,7 @@ func (s *Store) DeletePendingEvent(ctx context.Context, pendingEvent *types.Mapp
 
 	err := s.client.Delete(ctx, clouddatastore.GetKey(dbevent))
 	if err != nil {
-		logrus.WithError(err).Errorf("error while deleting pending mapper event in DynamoDB")
+		logrus.WithError(err).Errorf("error while deleting pending mapper event in gcloud datastore")
 		return err
 	}
 
@@ -298,7 +298,7 @@ func (s *Store) StoreHistory(ctx context.Context, history *types.MapperHistory) 
 
 	_, err := s.client.Put(ctx, clouddatastore.GetKey(&dbhistory), &dbhistory)
 	if err != nil {
-		logrus.WithError(err).Errorf("error while storing mapper history in DynamoDB")
+		logrus.WithError(err).Errorf("error while storing mapper history in gcloud datastore")
 		return err
 	}
 
