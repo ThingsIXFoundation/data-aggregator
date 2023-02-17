@@ -34,11 +34,11 @@ func replyEventsCursor(events []*types.GatewayEvent, cursor string, w http.Respo
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor": cursor,
-			"events": events,
+			"events": gatewayEventsOrEmptySlice(events),
 		})
 	} else {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"events": events,
+			"events": gatewayEventsOrEmptySlice(events),
 		})
 	}
 }
@@ -47,11 +47,11 @@ func replyGatewaysCursor(gateways []*types.Gateway, cursor string, w http.Respon
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor":   cursor,
-			"gateways": gateways,
+			"gateways": gatewaysOrEmptySlice(gateways),
 		})
 	} else {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"gateways": gateways,
+			"gateways": gatewaysOrEmptySlice(gateways),
 		})
 	}
 }

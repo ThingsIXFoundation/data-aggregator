@@ -65,5 +65,4 @@ func (rapi *RouterAPI) Snapshot(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=900")
 	w.WriteHeader(http.StatusOK)
 	w.Write(reply)
-
 }

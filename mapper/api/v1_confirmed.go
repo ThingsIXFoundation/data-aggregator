@@ -34,11 +34,11 @@ func replyEventsCursor(events []*types.MapperEvent, cursor string, w http.Respon
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor": cursor,
-			"events": events,
+			"events": mapperEventsOrEmptySlice(events),
 		})
 	} else {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"events": events,
+			"events": mapperEventsOrEmptySlice(events),
 		})
 	}
 }
@@ -47,11 +47,11 @@ func replyMappersCursor(mappers []*types.Mapper, cursor string, w http.ResponseW
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor":  cursor,
-			"mappers": mappers,
+			"mappers": mappersOrEmptySlice(mappers),
 		})
 	} else {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"mappers": mappers,
+			"mappers": mappersOrEmptySlice(mappers),
 		})
 	}
 }
