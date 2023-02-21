@@ -24,7 +24,6 @@ import (
 )
 
 func Run(ctx context.Context) error {
-
 	errChan := make(chan error)
 
 	gapi, err := NewAPI()

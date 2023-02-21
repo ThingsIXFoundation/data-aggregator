@@ -18,6 +18,7 @@ package api
 
 import (
 	"github.com/ThingsIXFoundation/data-aggregator/mapper/store"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -48,4 +49,23 @@ func (mapi *MapperAPI) Bind(root *chi.Mux) error {
 	})
 
 	return nil
+}
+
+var (
+	emptyMapperSlice      = make([]*types.Mapper, 0)
+	emptyMapperEventSlice = make([]*types.MapperEvent, 0)
+)
+
+func mappersOrEmptySlice(mappers []*types.Mapper) []*types.Mapper {
+	if mappers == nil {
+		return emptyMapperSlice
+	}
+	return mappers
+}
+
+func mapperEventsOrEmptySlice(events []*types.MapperEvent) []*types.MapperEvent {
+	if events == nil {
+		return emptyMapperEventSlice
+	}
+	return events
 }

@@ -18,6 +18,7 @@ package api
 
 import (
 	"github.com/ThingsIXFoundation/data-aggregator/gateway/store"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -51,4 +52,23 @@ func (gapi *GatewayAPI) Bind(root *chi.Mux) error {
 	})
 
 	return nil
+}
+
+var (
+	emptyGatewaysSlice      = make([]*types.Gateway, 0)
+	emptyGatewayEventsSlice = make([]*types.GatewayEvent, 0)
+)
+
+func gatewaysOrEmptySlice(gateways []*types.Gateway) []*types.Gateway {
+	if gateways == nil {
+		return emptyGatewaysSlice
+	}
+	return gateways
+}
+
+func gatewayEventsOrEmptySlice(events []*types.GatewayEvent) []*types.GatewayEvent {
+	if events == nil {
+		return emptyGatewayEventsSlice
+	}
+	return events
 }

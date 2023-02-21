@@ -218,7 +218,7 @@ func (s *Store) StoreEvent(ctx context.Context, event *types.GatewayEvent) error
 	_, err := s.client.Put(ctx, clouddatastore.GetKey(&dbevent), &dbevent)
 
 	if err != nil {
-		logrus.WithError(err).Errorf("error while storing gateway event in DynamoDB")
+		logrus.WithError(err).Errorf("error while storing gateway event in gcloud datastore")
 		return err
 	}
 
@@ -232,7 +232,7 @@ func (s *Store) StorePendingEvent(ctx context.Context, pendingEvent *types.Gatew
 	_, err := s.client.Put(ctx, clouddatastore.GetKey(&dbevent), &dbevent)
 
 	if err != nil {
-		logrus.WithError(err).Errorf("error while storing pending gateway event in DynamoDB")
+		logrus.WithError(err).Errorf("error while storing pending gateway event in gcloud datastore")
 		return err
 	}
 
@@ -244,7 +244,7 @@ func (s *Store) DeletePendingEvent(ctx context.Context, pendingEvent *types.Gate
 
 	err := s.client.Delete(ctx, clouddatastore.GetKey(dbevent))
 	if err != nil {
-		logrus.WithError(err).Errorf("error while deleting pending gateway event in DynamoDB")
+		logrus.WithError(err).Errorf("error while deleting pending gateway event in gcloud datastore")
 		return err
 	}
 
@@ -299,7 +299,7 @@ func (s *Store) StoreHistory(ctx context.Context, history *types.GatewayHistory)
 
 	_, err := s.client.Put(ctx, clouddatastore.GetKey(&dbhistory), &dbhistory)
 	if err != nil {
-		logrus.WithError(err).Errorf("error while storing gateway history in DynamoDB")
+		logrus.WithError(err).Errorf("error while storing gateway history in gcloud datastore")
 		return err
 	}
 
@@ -373,7 +373,6 @@ func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int,
 		if err != nil {
 			return nil, "", err
 		}
-
 		q = q.Start(cursorObj)
 	}
 

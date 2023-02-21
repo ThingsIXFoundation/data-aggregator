@@ -74,6 +74,6 @@ func (mapi *MapperAPI) PendingMapperEvents(w http.ResponseWriter, r *http.Reques
 	encoding.ReplyJSON(w, r, http.StatusOK, &PendingMapperEventsResponse{
 		Confirmations: viper.GetUint64(config.CONFIG_MAPPER_CHAINSYNC_CONFORMATIONS),
 		SyncedTo:      syncedTo,
-		Events:        events,
+		Events:        mapperEventsOrEmptySlice(events),
 	})
 }

@@ -107,7 +107,6 @@ func Run(cmd *cobra.Command, args []string) {
 	routerErr := make(chan error)
 	go func() {
 		defer close(routerErr)
-		router.Run(ctx)
 		if err := router.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 			logrus.WithError(err).Error("router functions failed")
 			routerErr <- err
@@ -117,7 +116,6 @@ func Run(cmd *cobra.Command, args []string) {
 	mapperErr := make(chan error)
 	go func() {
 		defer close(mapperErr)
-		mapper.Run(ctx)
 		if err := mapper.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 			logrus.WithError(err).Error("mapper functions failed")
 			mapperErr <- err
@@ -127,7 +125,6 @@ func Run(cmd *cobra.Command, args []string) {
 	apiErr := make(chan error)
 	go func() {
 		defer close(apiErr)
-		api.Run(ctx)
 		if err := api.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 			logrus.WithError(err).Error("api functions failed")
 			apiErr <- err

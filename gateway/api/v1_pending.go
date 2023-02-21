@@ -74,6 +74,6 @@ func (gapi *GatewayAPI) PendingGatewayEvents(w http.ResponseWriter, r *http.Requ
 	encoding.ReplyJSON(w, r, http.StatusOK, &PendingGatewayEventsResponse{
 		Confirmations: viper.GetUint64(config.CONFIG_GATEWAY_CHAINSYNC_CONFORMATIONS),
 		SyncedTo:      syncedTo,
-		Events:        events,
+		Events:        gatewayEventsOrEmptySlice(events),
 	})
 }
