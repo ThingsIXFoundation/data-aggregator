@@ -27,7 +27,6 @@ import (
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
 	"github.com/go-chi/chi/v5"
-	"github.com/uber/h3-go/v4"
 )
 
 const MAP_MAX_RES = 7
@@ -77,9 +76,9 @@ func (gapi *GatewayAPI) GatewayMap(w http.ResponseWriter, r *http.Request) {
 	)
 	defer cancel()
 
-	hexCell := h3.Cell(h3.IndexFromString(hex))
-	if !hexCell.IsValid() {
-		log.Warnf("invalid h3 index  provided: %s", hexCell)
+	hexCell, err := h3light.CellFromString(hex)
+	if err != nil {
+		log.Warnf("invalid h3 index  provided: %s", hex)
 		http.Error(w, "invalid h3 index", http.StatusBadRequest)
 		return
 	}
