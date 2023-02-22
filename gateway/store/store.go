@@ -51,6 +51,7 @@ type Store interface {
 	Get(ctx context.Context, id types.ID) (*types.Gateway, error)
 	GetByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*types.Gateway, string, error)
 	GetAll(ctx context.Context) ([]*types.Gateway, error)
+	GetAllPaged(ctx context.Context, limit int, cursor string) ([]*types.Gateway, string, error)
 
 	GetRes3CountPerRes0(ctx context.Context) (map[h3light.Cell]map[h3light.Cell]uint64, error)
 	GetCountInCellAtRes(ctx context.Context, cell h3light.Cell, res int) (map[h3light.Cell]uint64, error)

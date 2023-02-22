@@ -39,6 +39,7 @@ func NewGatewayAPI() (*GatewayAPI, error) {
 func (gapi *GatewayAPI) Bind(root *chi.Mux) error {
 	root.Route("/gateways", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
+			r.Get("/", gapi.AllGateways)
 			r.Get("/owned/{owner:(?i)(0x)?[0-9a-f]{40}}", gapi.OwnedGateways)
 			r.Get("/{id:(?i)(0x)?[0-9a-f]{64}}/", gapi.GatewayDetailsByID)
 			r.Get("/{id:(?i)(0x)?[0-9a-f]{64}}/events", gapi.GatewayEventsByID)

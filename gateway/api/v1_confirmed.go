@@ -56,6 +56,29 @@ func replyGatewaysCursor(gateways []*types.Gateway, cursor string, w http.Respon
 	}
 }
 
+func (gapi *GatewayAPI) AllGateways(w http.ResponseWriter, r *http.Request) {
+	var (
+		log         = logging.WithContext(r.Context())
+		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
+		cursor      = r.URL.Query().Get("cursor")
+		pageSize, _ = strconv.Atoi(r.URL.Query().Get("pageSize"))
+	)
+	defer cancel()
+
+	if pageSize == 0 {
+		pageSize = 15
+	}
+
+	gateways, cursor, err := gapi.store.GetAllPaged(ctx, pageSize, cursor)
+	if err != nil {
+		log.WithError(err).Error("unable to retrieve gateways from DB")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	replyGatewaysCursor(gateways, cursor, w, r)
+}
+
 func (gapi *GatewayAPI) OwnedGateways(w http.ResponseWriter, r *http.Request) {
 	var (
 		log         = logging.WithContext(r.Context())

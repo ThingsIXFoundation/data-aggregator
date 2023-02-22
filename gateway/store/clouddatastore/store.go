@@ -365,6 +365,39 @@ func (s *Store) GetAll(ctx context.Context) ([]*types.Gateway, error) {
 	return gateways, nil
 }
 
+func (s *Store) GetAllPaged(ctx context.Context, limit int, cursor string) ([]*types.Gateway, string, error) {
+	q := datastore.NewQuery((&models.DBGateway{}).Entity()).Limit(limit).Order("__key__")
+
+	if cursor != "" {
+		cursorObj, err := datastore.DecodeCursor(cursor)
+		if err != nil {
+			return nil, "", err
+		}
+		q = q.Start(cursorObj)
+	}
+
+	var gateways []*types.Gateway
+	var dbGateway models.DBGateway
+
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbGateway)
+	for err == nil {
+		gateways = append(gateways, dbGateway.Gateway())
+		_, err = it.Next(&dbGateway)
+	}
+
+	if err != iterator.Done {
+		return nil, "", err
+	}
+
+	cursorObj, err := it.Cursor()
+	if err != nil && err != iterator.Done {
+		return nil, "", err
+	}
+
+	return gateways, cursorObj.String(), nil
+}
+
 func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*types.Gateway, string, error) {
 	q := datastore.NewQuery((&models.DBGateway{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit).Order("__key__")
 
