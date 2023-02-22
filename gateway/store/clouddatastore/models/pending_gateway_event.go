@@ -43,10 +43,10 @@ func (e *DBPendingGatewayEvent) GatewayEvent() *types.GatewayEvent {
 		OldLocation:      e.OldLocation.CellPtr(),
 		NewAltitude:      utils.IntPtrToUintPtr(e.NewAltitude),
 		OldAltitude:      utils.IntPtrToUintPtr(e.OldAltitude),
-		NewFrequencyPlan: e.NewFrequencyPlan,
-		OldFrequencyPlan: e.OldFrequencyPlan,
-		NewAntennaGain:   e.NewAntennaGain,
-		OldAntennaGain:   e.OldAntennaGain,
+		NewFrequencyPlan: utils.ClonePtr(e.NewFrequencyPlan),
+		OldFrequencyPlan: utils.ClonePtr(e.OldFrequencyPlan),
+		NewAntennaGain:   utils.ClonePtr(e.NewAntennaGain),
+		OldAntennaGain:   utils.ClonePtr(e.OldAntennaGain),
 		Time:             e.Time,
 	}
 }

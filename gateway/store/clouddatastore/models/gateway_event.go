@@ -77,10 +77,10 @@ func (e *DBGatewayEvent) GatewayEvent() *types.GatewayEvent {
 		OldLocation:      e.OldLocation.CellPtr(),
 		NewAltitude:      utils.IntPtrToUintPtr(e.NewAltitude),
 		OldAltitude:      utils.IntPtrToUintPtr(e.OldAltitude),
-		NewFrequencyPlan: e.NewFrequencyPlan,
-		OldFrequencyPlan: e.OldFrequencyPlan,
-		NewAntennaGain:   e.NewAntennaGain,
-		OldAntennaGain:   e.OldAntennaGain,
+		NewFrequencyPlan: utils.ClonePtr(e.NewFrequencyPlan),
+		OldFrequencyPlan: utils.ClonePtr(e.OldFrequencyPlan),
+		NewAntennaGain:   utils.ClonePtr(e.NewAntennaGain),
+		OldAntennaGain:   utils.ClonePtr(e.OldAntennaGain),
 		Time:             e.Time,
 	}
 }
@@ -102,10 +102,10 @@ func NewDBGatewayEvent(event *types.GatewayEvent) *DBGatewayEvent {
 		OldLocation:      event.OldLocation.DatabaseCellPtr(),
 		NewAltitude:      utils.UintPtrToIntPtr(event.NewAltitude),
 		OldAltitude:      utils.UintPtrToIntPtr(event.OldAltitude),
-		NewFrequencyPlan: event.NewFrequencyPlan,
-		OldFrequencyPlan: event.OldFrequencyPlan,
-		NewAntennaGain:   event.NewAntennaGain,
-		OldAntennaGain:   event.OldAntennaGain,
+		NewFrequencyPlan: utils.ClonePtr(event.NewFrequencyPlan),
+		OldFrequencyPlan: utils.ClonePtr(event.OldFrequencyPlan),
+		NewAntennaGain:   utils.ClonePtr(event.NewAntennaGain),
+		OldAntennaGain:   utils.ClonePtr(event.OldAntennaGain),
 		Time:             event.Time,
 	}
 }

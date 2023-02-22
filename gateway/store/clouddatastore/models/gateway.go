@@ -50,8 +50,8 @@ func NewDBGateway(gw *types.Gateway) *DBGateway {
 		ContractAddress: utils.AddressToString(gw.ContractAddress),
 		Version:         int(gw.Version),
 		Owner:           utils.AddressToString(gw.Owner),
-		AntennaGain:     gw.AntennaGain,
-		FrequencyPlan:   gw.FrequencyPlan,
+		AntennaGain:     utils.ClonePtr(gw.AntennaGain),
+		FrequencyPlan:   utils.ClonePtr(gw.FrequencyPlan),
 		Location:        gw.Location.DatabaseCellPtr(),
 		Altitude:        utils.UintPtrToIntPtr(gw.Altitude),
 	}
@@ -63,8 +63,8 @@ func (gw *DBGateway) Gateway() *types.Gateway {
 		ContractAddress: common.HexToAddress(gw.ContractAddress),
 		Version:         uint8(gw.Version),
 		Owner:           common.HexToAddress(gw.Owner),
-		AntennaGain:     gw.AntennaGain,
-		FrequencyPlan:   gw.FrequencyPlan,
+		AntennaGain:     utils.ClonePtr(gw.AntennaGain),
+		FrequencyPlan:   utils.ClonePtr(gw.FrequencyPlan),
 		Location:        gw.Location.CellPtr(),
 		Altitude:        utils.IntPtrToUintPtr(gw.Altitude),
 	}
