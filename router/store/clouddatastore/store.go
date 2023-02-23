@@ -202,10 +202,6 @@ func (s *Store) GetEvents(ctx context.Context, routerID types.ID, limit int, cur
 		return nil, "", err
 	}
 
-	if err == iterator.Done {
-		return events, "", nil
-	}
-
 	cursorObj, err := it.Cursor()
 	if err != nil && err != iterator.Done {
 		return nil, "", err
@@ -372,10 +368,6 @@ func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int,
 	}
 	if err != iterator.Done {
 		return nil, "", err
-	}
-
-	if err == iterator.Done {
-		return routers, "", nil
 	}
 
 	cursorObj, err := it.Cursor()

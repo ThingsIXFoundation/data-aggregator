@@ -30,7 +30,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func replyEventsCursor(events []*types.MapperEvent, cursor string, w http.ResponseWriter, r *http.Request) {
+func replyEventsCursor(events []*types.MapperEvent, cursor string, pageSize int, w http.ResponseWriter, r *http.Request) {
+	if len(events) <= pageSize {
+		cursor = ""
+	} else {
+		events = events[:pageSize]
+	}
+
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor": cursor,
@@ -43,7 +49,13 @@ func replyEventsCursor(events []*types.MapperEvent, cursor string, w http.Respon
 	}
 }
 
-func replyMappersCursor(mappers []*types.Mapper, cursor string, w http.ResponseWriter, r *http.Request) {
+func replyMappersCursor(mappers []*types.Mapper, cursor string, pageSize int, w http.ResponseWriter, r *http.Request) {
+	if len(mappers) <= pageSize {
+		cursor = ""
+	} else {
+		mappers = mappers[:pageSize]
+	}
+
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor":  cursor,
@@ -70,14 +82,14 @@ func (gapi *MapperAPI) OwnedMappers(w http.ResponseWriter, r *http.Request) {
 		pageSize = 15
 	}
 
-	mappers, cursor, err := gapi.store.GetByOwner(ctx, owner, pageSize, cursor)
+	mappers, cursor, err := gapi.store.GetByOwner(ctx, owner, pageSize+1, cursor)
 	if err != nil {
 		log.WithError(err).Error("unable to retrieve mappers from DB")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	replyMappersCursor(mappers, cursor, w, r)
+	replyMappersCursor(mappers, cursor, pageSize, w, r)
 }
 
 func (gapi *MapperAPI) MapperDetailsByID(w http.ResponseWriter, r *http.Request) {
@@ -119,11 +131,11 @@ func (gapi *MapperAPI) MapperListByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if mapper == nil {
-		replyMappersCursor([]*types.Mapper{}, "", w, r)
+		replyMappersCursor([]*types.Mapper{}, "", 1, w, r)
 		return
 	}
 
-	replyMappersCursor([]*types.Mapper{mapper}, "", w, r)
+	replyMappersCursor([]*types.Mapper{mapper}, "", 1, w, r)
 }
 
 func (gapi *MapperAPI) MapperEventsByID(w http.ResponseWriter, r *http.Request) {
@@ -140,12 +152,12 @@ func (gapi *MapperAPI) MapperEventsByID(w http.ResponseWriter, r *http.Request) 
 		pageSize = 15
 	}
 
-	events, cursor, err := gapi.store.GetEvents(ctx, mapperID, pageSize, cursor)
+	events, cursor, err := gapi.store.GetEvents(ctx, mapperID, pageSize+1, cursor)
 	if err != nil {
 		log.WithError(err).Error("error while getting mapper events")
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
-	replyEventsCursor(events, cursor, w, r)
+	replyEventsCursor(events, cursor, pageSize, w, r)
 }

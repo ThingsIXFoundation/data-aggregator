@@ -30,7 +30,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func replyEventsCursor(events []*types.GatewayEvent, cursor string, w http.ResponseWriter, r *http.Request) {
+func replyEventsCursor(events []*types.GatewayEvent, cursor string, pageSize int, w http.ResponseWriter, r *http.Request) {
+	if len(events) <= pageSize {
+		cursor = ""
+	} else {
+		events = events[:pageSize]
+	}
+
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor": cursor,
@@ -43,7 +49,13 @@ func replyEventsCursor(events []*types.GatewayEvent, cursor string, w http.Respo
 	}
 }
 
-func replyGatewaysCursor(gateways []*types.Gateway, cursor string, w http.ResponseWriter, r *http.Request) {
+func replyGatewaysCursor(gateways []*types.Gateway, cursor string, pageSize int, w http.ResponseWriter, r *http.Request) {
+	if len(gateways) <= pageSize {
+		cursor = ""
+	} else {
+		gateways = gateways[:pageSize]
+	}
+
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor":   cursor,
@@ -70,14 +82,14 @@ func (gapi *GatewayAPI) OwnedGateways(w http.ResponseWriter, r *http.Request) {
 		pageSize = 15
 	}
 
-	gateways, cursor, err := gapi.store.GetByOwner(ctx, owner, pageSize, cursor)
+	gateways, cursor, err := gapi.store.GetByOwner(ctx, owner, pageSize+1, cursor)
 	if err != nil {
 		log.WithError(err).Error("unable to retrieve gateways from DB")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	replyGatewaysCursor(gateways, cursor, w, r)
+	replyGatewaysCursor(gateways, cursor, pageSize, w, r)
 }
 
 func (gapi *GatewayAPI) GatewayDetailsByID(w http.ResponseWriter, r *http.Request) {
@@ -119,11 +131,11 @@ func (gapi *GatewayAPI) GatewayListByID(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if gateway == nil {
-		replyGatewaysCursor([]*types.Gateway{}, "", w, r)
+		replyGatewaysCursor([]*types.Gateway{}, "", 1, w, r)
 		return
 	}
 
-	replyGatewaysCursor([]*types.Gateway{gateway}, "", w, r)
+	replyGatewaysCursor([]*types.Gateway{gateway}, "", 1, w, r)
 }
 
 func (gapi *GatewayAPI) GatewayEventsByID(w http.ResponseWriter, r *http.Request) {
@@ -140,12 +152,12 @@ func (gapi *GatewayAPI) GatewayEventsByID(w http.ResponseWriter, r *http.Request
 		pageSize = 15
 	}
 
-	events, cursor, err := gapi.store.GetEvents(ctx, gatewayID, pageSize, cursor)
+	events, cursor, err := gapi.store.GetEvents(ctx, gatewayID, pageSize+1, cursor)
 	if err != nil {
 		log.WithError(err).Error("error while getting gateway events")
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
-	replyEventsCursor(events, cursor, w, r)
+	replyEventsCursor(events, cursor, pageSize, w, r)
 }
