@@ -74,15 +74,15 @@ func decodeLogToRouterEvent(ctx context.Context, log *etypes.Log, client *ethcli
 
 		event.Owner = utils.Ptr(routerBefore.Owner)
 
-		event.NewNetID = routerBefore.NetID
-		event.NewPrefix = routerBefore.Prefix
-		event.NewMask = routerBefore.Mask
-		event.NewEndpoint = routerBefore.Endpoint
+		event.OldNetID = routerBefore.NetID
+		event.OldPrefix = routerBefore.Prefix
+		event.OldMask = routerBefore.Mask
+		event.OldEndpoint = routerBefore.Endpoint
 
-		event.OldNetID = routerAfter.NetID
-		event.OldPrefix = routerAfter.Prefix
-		event.OldMask = routerAfter.Mask
-		event.OldEndpoint = routerAfter.Endpoint
+		event.NewNetID = routerAfter.NetID
+		event.NewPrefix = routerAfter.Prefix
+		event.NewMask = routerAfter.Mask
+		event.NewEndpoint = routerAfter.Endpoint
 
 	case RouterRemovedEvent:
 		event.Type = types.RouterRemovedEvent
