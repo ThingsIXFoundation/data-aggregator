@@ -103,6 +103,29 @@ func (gapi *GatewayAPI) GatewayDetailsByID(w http.ResponseWriter, r *http.Reques
 	encoding.ReplyJSON(w, r, http.StatusOK, gateway)
 }
 
+func (gapi *GatewayAPI) GatewayListByID(w http.ResponseWriter, r *http.Request) {
+	var (
+		log         = logging.WithContext(r.Context())
+		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
+		gatewayID   = utils.IDFromRequest(r, "id")
+	)
+	defer cancel()
+
+	gateway, err := gapi.store.Get(ctx, gatewayID)
+	if err != nil {
+		log.WithError(err).Error("error while getting gateway details")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	if gateway == nil {
+		replyGatewaysCursor([]*types.Gateway{}, "", w, r)
+		return
+	}
+
+	replyGatewaysCursor([]*types.Gateway{gateway}, "", w, r)
+}
+
 func (gapi *GatewayAPI) GatewayEventsByID(w http.ResponseWriter, r *http.Request) {
 	var (
 		log         = logging.WithContext(r.Context())

@@ -103,6 +103,29 @@ func (gapi *MapperAPI) MapperDetailsByID(w http.ResponseWriter, r *http.Request)
 	encoding.ReplyJSON(w, r, http.StatusOK, mapper)
 }
 
+func (gapi *MapperAPI) MapperListByID(w http.ResponseWriter, r *http.Request) {
+	var (
+		log         = logging.WithContext(r.Context())
+		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
+		mapperID    = utils.IDFromRequest(r, "id")
+	)
+	defer cancel()
+
+	mapper, err := gapi.store.Get(ctx, mapperID)
+	if err != nil {
+		log.WithError(err).Error("error while getting mapper details")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	if mapper == nil {
+		replyMappersCursor([]*types.Mapper{}, "", w, r)
+		return
+	}
+
+	replyMappersCursor([]*types.Mapper{mapper}, "", w, r)
+}
+
 func (gapi *MapperAPI) MapperEventsByID(w http.ResponseWriter, r *http.Request) {
 	var (
 		log         = logging.WithContext(r.Context())

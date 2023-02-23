@@ -36,3 +36,8 @@ type PendingGatewayEventsResponse struct {
 	SyncedTo      uint64                `json:"syncedTo"`
 	Events        []*types.GatewayEvent `json:"events"`
 }
+
+type ValidFrequencyPlansForLocation struct {
+	Plans           []string `json:"plans"`
+	BlockchainPlans []uint   `json:"blockchainPlans"`
+}

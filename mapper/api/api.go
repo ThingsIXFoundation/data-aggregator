@@ -40,7 +40,8 @@ func (mapi *MapperAPI) Bind(root *chi.Mux) error {
 	root.Route("/mappers", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Get("/owned/{owner:(?i)(0x)?[0-9a-f]{40}}", mapi.OwnedMappers)
-			r.Get("/{id:(?i)(0x)?[0-9a-f]{64}}/", mapi.MapperDetailsByID)
+			r.Get("/{id:(?i)(0x)?[0-9a-f]{64}}", mapi.MapperDetailsByID)
+			r.Get("/{id:(?i)(0x)?[0-9a-f]{64}}/list", mapi.MapperListByID)
 			r.Get("/{id:(?i)(0x)?[0-9a-f]{64}}/events", mapi.MapperEventsByID)
 			r.Route("/events", func(r chi.Router) {
 				r.Post("/owner/{owner:(?i)(0x)?[0-9a-f]{40}}/pending", mapi.PendingMapperEvents)

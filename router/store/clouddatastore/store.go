@@ -207,6 +207,10 @@ func (s *Store) GetEvents(ctx context.Context, routerID types.ID, limit int, cur
 		return nil, "", err
 	}
 
+	if err == iterator.Done {
+		return events, "", nil
+	}
+
 	return events, cursorObj.String(), nil
 
 }
@@ -280,6 +284,7 @@ func (s *Store) PendingEventsForOwner(ctx context.Context, owner common.Address)
 		events = append(events, dbEvent.RouterEvent())
 	}
 
+	events = nil
 	q = datastore.NewQuery((&models.DBPendingRouterEvent{}).Entity()).FilterField("NewOwner", "!=", utils.AddressToString(owner)).FilterField("OldOwner", "=", utils.AddressToString(owner))
 	_, err = s.client.GetAll(ctx, q, &dbEvents)
 	if err != nil {
@@ -372,6 +377,10 @@ func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int,
 	cursorObj, err := it.Cursor()
 	if err != nil && err != iterator.Done {
 		return nil, "", err
+	}
+
+	if err == iterator.Done {
+		return routers, "", nil
 	}
 
 	return routers, cursorObj.String(), nil
