@@ -60,6 +60,12 @@ func (gapi *GatewayAPI) FrequencyPlansAtLocation(w http.ResponseWriter, r *http.
 		return
 	}
 
+	if cell.Resolution() != 10 {
+		log.Error("bad cell resolution provided")
+		http.Error(w, "bad cell provided", http.StatusBadRequest)
+		return
+	}
+
 	resp := &ValidFrequencyPlansForLocation{}
 
 	for _, band := range frequency_plan.AllBands {
