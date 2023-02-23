@@ -59,6 +59,8 @@ func decodeLogToRouterEvent(ctx context.Context, log *etypes.Log, client *ethcli
 		event.NewEndpoint = router.Endpoint
 
 	case RouterUpdateEvent:
+		event.Type = types.RouterUpdatedEvent
+		event.ID = types.ID(log.Topics[1])
 		routerBefore, err := routerDetails(routerRegistry, contractAddress, log.BlockNumber-1, event.ID)
 		if err != nil {
 			logrus.WithError(err).Error("error while getting before-update router details")
@@ -124,5 +126,4 @@ func routerDetails(registry *router_registry.RouterRegistryCaller, contract comm
 		Mask:            r.Mask,
 		Endpoint:        r.Endpoint,
 	}, nil
-
 }
