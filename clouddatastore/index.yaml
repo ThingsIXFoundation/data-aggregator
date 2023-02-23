@@ -28,3 +28,7 @@ indexes:
   properties:
     - name: ID
     - name: Time
+- kind: PendingGatewayEvent
+  properties:
+    - name: OldOwner
+    - name: NewOwner
