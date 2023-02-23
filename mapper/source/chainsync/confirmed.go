@@ -156,12 +156,12 @@ func (cs *ChainSync) getEvents(ctx context.Context, client *ethclient.Client, fr
 			"type":  log.Topics[0],
 		}).Trace("event")
 		event, err := decodeLogToMapperEvent(ctx, &log, client, mapperRegistry, cs.contractAddress)
-		if event == nil {
-			continue
-		}
 		if err != nil {
 			logrus.WithError(err).Error("error while processing mapper logs")
 			return nil, err
+		}
+		if event == nil {
+			continue
 		}
 
 		events = append(events, event)
