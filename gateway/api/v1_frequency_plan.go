@@ -20,8 +20,11 @@ import (
 	"net/http"
 
 	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
+	h3light "github.com/ThingsIXFoundation/h3-light"
 	"github.com/ThingsIXFoundation/http-utils/encoding"
+	"github.com/ThingsIXFoundation/http-utils/logging"
 	"github.com/ThingsIXFoundation/types"
+	"github.com/go-chi/chi/v5"
 )
 
 var (
@@ -42,4 +45,30 @@ func init() {
 func (gapi *GatewayAPI) SupportedFrequencyPlans(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=300")
 	encoding.ReplyJSON(w, r, http.StatusOK, supportedFrequencyPlans)
+}
+
+func (gapi *GatewayAPI) FrequencyPlansAtLocation(w http.ResponseWriter, r *http.Request) {
+	var (
+		log = logging.WithContext(r.Context())
+		hex = chi.URLParam(r, "hex")
+	)
+
+	cell, err := h3light.CellFromString(hex)
+	if err != nil {
+		log.WithError(err).Error("error while getting frequency plans for location")
+		http.Error(w, "bad cell provided", http.StatusBadRequest)
+		return
+	}
+
+	resp := &ValidFrequencyPlansForLocation{}
+
+	for _, band := range frequency_plan.AllBands {
+		if valid, _ := frequency_plan.IsValidBandForHex(band, cell); valid {
+			resp.Plans = append(resp.Plans, string(band))
+			resp.BlockchainPlans = append(resp.BlockchainPlans, uint(band.ToBlockchain()))
+		}
+	}
+
+	w.Header().Set("Cache-Control", "public, max-age=900")
+	encoding.ReplyJSON(w, r, http.StatusOK, resp)
 }
