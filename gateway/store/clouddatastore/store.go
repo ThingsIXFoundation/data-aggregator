@@ -203,13 +203,13 @@ func (s *Store) GetEvents(ctx context.Context, gatewayID types.ID, limit int, cu
 		return nil, "", err
 	}
 
+	if err == iterator.Done {
+		return events, "", nil
+	}
+
 	cursorObj, err := it.Cursor()
 	if err != nil && err != iterator.Done {
 		return nil, "", err
-	}
-
-	if err == iterator.Done {
-		return events, "", nil
 	}
 
 	return events, cursorObj.String(), nil
@@ -395,13 +395,13 @@ func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int,
 		return nil, "", err
 	}
 
+	if err == iterator.Done {
+		return gateways, "", nil
+	}
+
 	cursorObj, err := it.Cursor()
 	if err != nil && err != iterator.Done {
 		return nil, "", err
-	}
-
-	if err == iterator.Done {
-		return gateways, "", nil
 	}
 
 	return gateways, cursorObj.String(), nil
