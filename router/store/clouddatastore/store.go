@@ -284,6 +284,7 @@ func (s *Store) PendingEventsForOwner(ctx context.Context, owner common.Address)
 		events = append(events, dbEvent.RouterEvent())
 	}
 
+	events = nil
 	q = datastore.NewQuery((&models.DBPendingRouterEvent{}).Entity()).FilterField("NewOwner", "!=", utils.AddressToString(owner)).FilterField("OldOwner", "=", utils.AddressToString(owner))
 	_, err = s.client.GetAll(ctx, q, &dbEvents)
 	if err != nil {
