@@ -131,7 +131,7 @@ func (cs *ChainSync) handlePending(ctx context.Context) error {
 				return err
 			}
 			if event == nil {
-				return nil
+				continue
 			}
 
 			cs.pendingEventFunc(ctx, event)
