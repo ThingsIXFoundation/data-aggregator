@@ -135,8 +135,6 @@ func (cs *ChainSync) handlePending(ctx context.Context) error {
 			}
 
 			cs.pendingEventFunc(ctx, event)
-
-			return nil
 		}
 	}
 }
