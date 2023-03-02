@@ -64,7 +64,7 @@ func (gapi *GatewayAPI) GatewayMapRes0(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("Cache-Control", "public, max-age=600")
+	w.Header().Set("Cache-Control", "public, max-age=60")
 	encoding.ReplyJSON(w, r, http.StatusOK, &ret)
 }
 
@@ -131,6 +131,6 @@ func (gapi *GatewayAPI) GatewayMap(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	w.Header().Set("Cache-Control", "public, max-age=300")
+	w.Header().Set("Cache-Control", "public, max-age=30")
 	encoding.ReplyJSON(w, r, http.StatusOK, &gh)
 }
