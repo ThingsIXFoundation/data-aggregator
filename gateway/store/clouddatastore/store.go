@@ -314,7 +314,7 @@ func (s *Store) GetHistoryAt(ctx context.Context, id types.ID, at time.Time) (*t
 		Time:            at,
 	}
 
-	q := datastore.NewQuery(dbhistory.Entity()).FilterField("ID", "=", id.String()).FilterField("Time", "<=", at).Order("Time").KeysOnly().Limit(1)
+	q := datastore.NewQuery(dbhistory.Entity()).FilterField("ID", "=", id.String()).FilterField("Time", "<=", at).Order("-Time").KeysOnly().Limit(1)
 	keys, err := s.client.GetAll(ctx, q, nil)
 	if err != nil {
 		return nil, err

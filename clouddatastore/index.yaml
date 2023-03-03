@@ -20,15 +20,22 @@ indexes:
   properties:
     - name: ID
     - name: Time
+      direction: desc
 - kind: MapperHistory
   properties:
     - name: ID
     - name: Time
+      direction: desc
 - kind: RouterHistory
   properties:
     - name: ID
     - name: Time
+      direction: desc
 - kind: PendingGatewayEvent
+  properties:
+    - name: OldOwner
+    - name: NewOwner
+- kind: PendingMapperEvent
   properties:
     - name: OldOwner
     - name: NewOwner
