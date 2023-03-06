@@ -23,6 +23,7 @@ import (
 
 	"github.com/ThingsIXFoundation/data-aggregator/chainsync"
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
+	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	router_registry "github.com/ThingsIXFoundation/router-registry-go"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -56,6 +57,7 @@ func decodeLogToRouterEvent(ctx context.Context, log *etypes.Log, client *ethcli
 		event.NewNetID = router.NetID
 		event.NewPrefix = router.Prefix
 		event.NewMask = router.Mask
+		event.NewFrequencyPlan = router.FrequencyPlan
 		event.NewEndpoint = router.Endpoint
 
 	case RouterUpdateEvent:
@@ -77,11 +79,13 @@ func decodeLogToRouterEvent(ctx context.Context, log *etypes.Log, client *ethcli
 		event.OldNetID = routerBefore.NetID
 		event.OldPrefix = routerBefore.Prefix
 		event.OldMask = routerBefore.Mask
+		event.OldFrequencyPlan = routerBefore.FrequencyPlan
 		event.OldEndpoint = routerBefore.Endpoint
 
 		event.NewNetID = routerAfter.NetID
 		event.NewPrefix = routerAfter.Prefix
 		event.NewMask = routerAfter.Mask
+		event.NewFrequencyPlan = routerAfter.FrequencyPlan
 		event.NewEndpoint = routerAfter.Endpoint
 
 	case RouterRemovedEvent:
@@ -124,6 +128,7 @@ func routerDetails(registry *router_registry.RouterRegistryCaller, contract comm
 		NetID:           uint32(r.Netid.Int64()),
 		Prefix:          r.Prefix,
 		Mask:            r.Mask,
+		FrequencyPlan:   frequency_plan.FromBlockchain(frequency_plan.BlockchainFrequencyPlan(r.FrequencyPlan)),
 		Endpoint:        r.Endpoint,
 	}, nil
 }

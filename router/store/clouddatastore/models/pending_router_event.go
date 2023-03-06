@@ -51,6 +51,8 @@ func (e *DBPendingRouterEvent) RouterEvent() *types.RouterEvent {
 		OldPrefix:        uint32(e.OldPrefix),
 		NewMask:          uint8(e.NewMask),
 		OldMask:          uint8(e.OldMask),
+		NewFrequencyPlan: e.NewFrequencyPlan,
+		OldFrequencyPlan: e.OldFrequencyPlan,
 		NewEndpoint:      e.NewEndpoint,
 		OldEndpoint:      e.OldEndpoint,
 		Time:             e.Time,

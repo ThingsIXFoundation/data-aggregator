@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
+	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -37,14 +38,16 @@ type DBRouterEvent struct {
 	ID    string
 	Owner *string
 
-	NewNetID    int    `datastore:",omitempty"`
-	OldNetID    int    `datastore:",omitempty"`
-	NewPrefix   int    `datastore:",omitempty"`
-	OldPrefix   int    `datastore:",omitempty"`
-	NewMask     int    `datastore:",omitempty"`
-	OldMask     int    `datastore:",omitempty"`
-	NewEndpoint string `datastore:",omitempty"`
-	OldEndpoint string `datastore:",omitempty"`
+	NewNetID         int                     `datastore:",omitempty"`
+	OldNetID         int                     `datastore:",omitempty"`
+	NewPrefix        int                     `datastore:",omitempty"`
+	OldPrefix        int                     `datastore:",omitempty"`
+	NewMask          int                     `datastore:",omitempty"`
+	OldMask          int                     `datastore:",omitempty"`
+	NewFrequencyPlan frequency_plan.BandName `datastore:",omitempty"`
+	OldFrequencyPlan frequency_plan.BandName `datastore:",omitempty"`
+	NewEndpoint      string                  `datastore:",omitempty"`
+	OldEndpoint      string                  `datastore:",omitempty"`
 
 	Time time.Time
 }
@@ -73,6 +76,8 @@ func (e *DBRouterEvent) RouterEvent() *types.RouterEvent {
 		OldPrefix:        uint32(e.OldPrefix),
 		NewMask:          uint8(e.NewMask),
 		OldMask:          uint8(e.OldMask),
+		NewFrequencyPlan: e.NewFrequencyPlan,
+		OldFrequencyPlan: e.OldFrequencyPlan,
 		NewEndpoint:      e.NewEndpoint,
 		OldEndpoint:      e.OldEndpoint,
 		Time:             e.Time,
@@ -96,6 +101,8 @@ func NewDBRouterEvent(e *types.RouterEvent) *DBRouterEvent {
 		OldPrefix:        int(e.OldPrefix),
 		NewMask:          int(e.NewMask),
 		OldMask:          int(e.OldMask),
+		NewFrequencyPlan: e.NewFrequencyPlan,
+		OldFrequencyPlan: e.OldFrequencyPlan,
 		NewEndpoint:      e.NewEndpoint,
 		OldEndpoint:      e.OldEndpoint,
 		Time:             e.Time,
