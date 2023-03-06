@@ -23,6 +23,7 @@ import (
 
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/router/store"
+	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/sirupsen/logrus"
@@ -196,18 +197,21 @@ func (ga *RouterAggregator) processEvent(ctx context.Context, event *types.Route
 		routerHistory.NetID = event.NewNetID
 		routerHistory.Prefix = event.NewPrefix
 		routerHistory.Mask = event.NewMask
+		routerHistory.FrequencyPlan = event.NewFrequencyPlan
 		routerHistory.Endpoint = event.NewEndpoint
 	case types.RouterUpdatedEvent:
 		routerHistory.Owner = event.Owner
 		routerHistory.NetID = event.NewNetID
 		routerHistory.Prefix = event.NewPrefix
 		routerHistory.Mask = event.NewMask
+		routerHistory.FrequencyPlan = event.NewFrequencyPlan
 		routerHistory.Endpoint = event.NewEndpoint
 	case types.RouterRemovedEvent:
 		routerHistory.Owner = nil
 		routerHistory.NetID = 0
 		routerHistory.Prefix = 0
 		routerHistory.Mask = 0
+		routerHistory.FrequencyPlan = frequency_plan.Invalid
 		routerHistory.Endpoint = ""
 	}
 

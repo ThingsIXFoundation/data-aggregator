@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
+	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -29,11 +30,12 @@ type DBRouterHistory struct {
 	// ID is the ThingsIX compressed public key for this router
 	ID              string
 	ContractAddress string
-	Owner           *string `datastore:",omitempty"`
-	NetID           int     `datastore:",omitempty"`
-	Prefix          int     `datastore:",omitempty"`
-	Mask            int     `datastore:",omitempty"`
-	Endpoint        string  `datastore:",omitempty"`
+	Owner           *string                 `datastore:",omitempty"`
+	NetID           int                     `datastore:",omitempty"`
+	Prefix          int                     `datastore:",omitempty"`
+	Mask            int                     `datastore:",omitempty"`
+	FrequencyPlan   frequency_plan.BandName `datastore:",omitempty"`
+	Endpoint        string                  `datastore:",omitempty"`
 	Time            time.Time
 	BlockNumber     int
 	Block           string
@@ -60,6 +62,7 @@ func (e *DBRouterHistory) RouterHistory() *types.RouterHistory {
 		NetID:           uint32(e.NetID),
 		Prefix:          uint32(e.Prefix),
 		Mask:            uint8(e.Mask),
+		FrequencyPlan:   e.FrequencyPlan,
 		Endpoint:        e.Endpoint,
 		Time:            e.Time,
 		BlockNumber:     uint64(e.BlockNumber),
@@ -76,6 +79,7 @@ func NewDBRouterHistory(e *types.RouterHistory) *DBRouterHistory {
 		NetID:           int(e.NetID),
 		Prefix:          int(e.Prefix),
 		Mask:            int(e.Mask),
+		FrequencyPlan:   e.FrequencyPlan,
 		Endpoint:        e.Endpoint,
 		Time:            e.Time,
 		BlockNumber:     int(e.BlockNumber),

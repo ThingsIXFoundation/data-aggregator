@@ -18,6 +18,7 @@ package models
 
 import (
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
+	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -30,6 +31,7 @@ type DBRouter struct {
 	NetID           int
 	Prefix          int
 	Mask            int
+	FrequencyPlan   string
 	Endpoint        string
 }
 
@@ -41,6 +43,7 @@ func NewDBRouter(r *types.Router) *DBRouter {
 		NetID:           int(r.NetID),
 		Prefix:          int(r.Prefix),
 		Mask:            int(r.Mask),
+		FrequencyPlan:   string(r.FrequencyPlan),
 		Endpoint:        r.Endpoint,
 	}
 }
@@ -61,6 +64,7 @@ func (r *DBRouter) Router() *types.Router {
 		NetID:           uint32(r.NetID),
 		Prefix:          uint32(r.Prefix),
 		Mask:            uint8(r.Mask),
+		FrequencyPlan:   frequency_plan.BandName(r.FrequencyPlan),
 		Endpoint:        r.Endpoint,
 	}
 }
