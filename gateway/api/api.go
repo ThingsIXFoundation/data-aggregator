@@ -17,9 +17,14 @@
 package api
 
 import (
+	"context"
+	"time"
+
 	"github.com/ThingsIXFoundation/data-aggregator/gateway/store"
+	"github.com/ThingsIXFoundation/data-aggregator/gateway/store/clouddatastore/models"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/go-chi/chi/v5"
+	"github.com/sirupsen/logrus"
 )
 
 type GatewayAPI struct {
@@ -31,6 +36,7 @@ func NewGatewayAPI() (*GatewayAPI, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &GatewayAPI{
 		store: store,
 	}, nil
@@ -50,15 +56,33 @@ func (gapi *GatewayAPI) Bind(root *chi.Mux) error {
 			r.Get("/frequencyplan/{hex:(?i)[0-9a-f]{15}}", gapi.FrequencyPlansAtLocation)
 			r.Get("/map/res0", gapi.GatewayMapRes0)
 			r.Get("/map/{hex:(?i)[0-9a-f]{15}}", gapi.GatewayMap)
+
+			r.Post("/onboards/{owner:(?i)(0x)?[0-9a-f]{40}}", gapi.CreateGatewayOnboard)
+			r.Get("/onboards/{owner:(?i)(0x)?[0-9a-f]{40}}", gapi.GatewayOnboard)
 		})
 	})
 
 	return nil
 }
 
+func (gapi *GatewayAPI) Run(ctx context.Context) {
+	for {
+		if err := gapi.store.PurgeExpiredOnboards(ctx); err != nil {
+			logrus.WithError(err).Error("unable to purge expired gateway onboard")
+		}
+		select {
+		case <-time.After(5 * time.Minute):
+			continue
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
 var (
-	emptyGatewaysSlice      = make([]*types.Gateway, 0)
-	emptyGatewayEventsSlice = make([]*types.GatewayEvent, 0)
+	emptyGatewaysSlice        = make([]*types.Gateway, 0)
+	emptyGatewayEventsSlice   = make([]*types.GatewayEvent, 0)
+	emptyGatewayOnboardsSlice = make([]*models.DBGatewayOnboard, 0)
 )
 
 func gatewaysOrEmptySlice(gateways []*types.Gateway) []*types.Gateway {
@@ -73,4 +97,11 @@ func gatewayEventsOrEmptySlice(events []*types.GatewayEvent) []*types.GatewayEve
 		return emptyGatewayEventsSlice
 	}
 	return events
+}
+
+func onboardsOrEmptySlice(onboards []*models.DBGatewayOnboard) []*models.DBGatewayOnboard {
+	if onboards == nil {
+		return emptyGatewayOnboardsSlice
+	}
+	return onboards
 }

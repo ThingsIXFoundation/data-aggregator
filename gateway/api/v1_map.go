@@ -78,7 +78,7 @@ func (gapi *GatewayAPI) GatewayMap(w http.ResponseWriter, r *http.Request) {
 
 	hexCell, err := h3light.CellFromString(hex)
 	if err != nil {
-		log.Warnf("invalid h3 index  provided: %s", hex)
+		log.Warnf("invalid h3 index provided: %s", hex)
 		http.Error(w, "invalid h3 index", http.StatusBadRequest)
 		return
 	}

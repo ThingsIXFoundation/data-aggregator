@@ -23,6 +23,7 @@ import (
 
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/gateway/store/clouddatastore"
+	"github.com/ThingsIXFoundation/data-aggregator/gateway/store/clouddatastore/models"
 	h3light "github.com/ThingsIXFoundation/h3-light"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -55,6 +56,11 @@ type Store interface {
 	GetRes3CountPerRes0(ctx context.Context) (map[h3light.Cell]map[h3light.Cell]uint64, error)
 	GetCountInCellAtRes(ctx context.Context, cell h3light.Cell, res int) (map[h3light.Cell]uint64, error)
 	GetInCell(ctx context.Context, cell h3light.Cell) ([]*types.Gateway, error)
+
+	StoreGatewayOnboard(ctx context.Context, gatewayID types.ID, owner common.Address, signature string, version uint8, localId string) error
+	GetGatewayOnboardsByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*models.DBGatewayOnboard, string, error)
+
+	PurgeExpiredOnboards(ctx context.Context) error
 }
 
 func NewStore() (Store, error) {

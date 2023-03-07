@@ -60,7 +60,6 @@ func NewStore(ctx context.Context) (*Store, error) {
 	}
 
 	return s, nil
-
 }
 
 func (s *Store) currentBlockCacheLookup(pksk string) *currentBlockCacheItem {
@@ -234,6 +233,14 @@ func (s *Store) StorePendingEvent(ctx context.Context, pendingEvent *types.Gatew
 	if err != nil {
 		logrus.WithError(err).Errorf("error while storing pending gateway event in gcloud datastore")
 		return err
+	}
+
+	// delete pending gateway onboarding event if there is one
+	if pendingEvent.Type == types.GatewayOnboardedEvent {
+		key := clouddatastore.GetKey(&models.DBGatewayOnboard{
+			GatewayID: dbevent.ID,
+		})
+		_ = s.client.Delete(ctx, key)
 	}
 
 	return nil
@@ -501,4 +508,59 @@ func (s *Store) GetInCell(ctx context.Context, cell h3light.Cell) ([]*types.Gate
 	}
 
 	return gateways, nil
+}
+
+func (s *Store) StoreGatewayOnboard(ctx context.Context, gatewayID types.ID, owner common.Address, signature string, version uint8, localId string) error {
+	dbonboard := *models.NewDBGatewayOnboard(gatewayID, owner, signature, version, localId)
+	_, err := s.client.Put(ctx, daclouddatastore.GetKey(&dbonboard), &dbonboard)
+	return err
+}
+
+func (s *Store) GetGatewayOnboardsByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*models.DBGatewayOnboard, string, error) {
+	q := datastore.NewQuery((&models.DBGatewayOnboard{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit).Order("__key__")
+
+	if cursor != "" {
+		cursorObj, err := datastore.DecodeCursor(cursor)
+		if err != nil {
+			return nil, "", err
+		}
+		q = q.Start(cursorObj)
+	}
+
+	var gatewayOnboard models.DBGatewayOnboard
+	var dbGatewayOnboards []*models.DBGatewayOnboard
+
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&gatewayOnboard)
+	for err == nil {
+		dbGatewayOnboards = append(dbGatewayOnboards, gatewayOnboard.Clone())
+		_, err = it.Next(&gatewayOnboard)
+	}
+	if err != iterator.Done {
+		return nil, "", err
+	}
+
+	cursorObj, err := it.Cursor()
+	if err != nil && err != iterator.Done {
+		return nil, "", err
+	}
+
+	return dbGatewayOnboards, cursorObj.String(), nil
+}
+
+func (s *Store) PurgeExpiredOnboards(ctx context.Context) error {
+	q := datastore.NewQuery((&models.DBGatewayOnboard{}).Entity()).KeysOnly().FilterField("Expires", "<=", time.Now())
+
+	expiredKeys, err := s.client.GetAll(ctx, q, nil)
+	if err != nil {
+		return err
+	}
+
+	if err := s.client.DeleteMulti(ctx, expiredKeys); err != nil {
+		return err
+	}
+
+	logrus.WithField("#", len(expiredKeys)).Info("purged expired gateway onboard messages")
+
+	return nil
 }
