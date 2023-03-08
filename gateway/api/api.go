@@ -57,8 +57,8 @@ func (gapi *GatewayAPI) Bind(root *chi.Mux) error {
 			r.Get("/map/res0", gapi.GatewayMapRes0)
 			r.Get("/map/{hex:(?i)[0-9a-f]{15}}", gapi.GatewayMap)
 
-			r.Post("/onboards/{owner:(?i)(0x)?[0-9a-f]{40}}", gapi.CreateGatewayOnboard)
-			r.Get("/onboards/{owner:(?i)(0x)?[0-9a-f]{40}}", gapi.GatewayOnboard)
+			r.Post("/onboards/{onboarder:(?i)(0x)?[0-9a-f]{40}}/{owner:(?i)(0x)?[0-9a-f]{40}}", gapi.CreateGatewayOnboard)
+			r.Get("/onboards/{onboarder:(?i)(0x)?[0-9a-f]{40}}/{owner:(?i)(0x)?[0-9a-f]{40}}", gapi.GatewayOnboard)
 		})
 	})
 
@@ -82,7 +82,7 @@ func (gapi *GatewayAPI) Run(ctx context.Context) {
 var (
 	emptyGatewaysSlice        = make([]*types.Gateway, 0)
 	emptyGatewayEventsSlice   = make([]*types.GatewayEvent, 0)
-	emptyGatewayOnboardsSlice = make([]*models.DBGatewayOnboard, 0)
+	emptyGatewayOnboardsSlice = make([]*models.GatewayOnboard, 0)
 )
 
 func gatewaysOrEmptySlice(gateways []*types.Gateway) []*types.Gateway {
@@ -99,7 +99,7 @@ func gatewayEventsOrEmptySlice(events []*types.GatewayEvent) []*types.GatewayEve
 	return events
 }
 
-func onboardsOrEmptySlice(onboards []*models.DBGatewayOnboard) []*models.DBGatewayOnboard {
+func onboardsOrEmptySlice(onboards []*models.GatewayOnboard) []*models.GatewayOnboard {
 	if onboards == nil {
 		return emptyGatewayOnboardsSlice
 	}
