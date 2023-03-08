@@ -82,7 +82,7 @@ func (gapi *GatewayAPI) OwnedGateways(w http.ResponseWriter, r *http.Request) {
 		pageSize = 15
 	}
 
-	gateways, cursor, err := gapi.store.GetByOwner(ctx, owner, pageSize+1, cursor)
+	gateways, cursor, err := gapi.store.GetByOwner(ctx, owner, pageSize, cursor)
 	if err != nil {
 		log.WithError(err).Error("unable to retrieve gateways from DB")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -152,7 +152,7 @@ func (gapi *GatewayAPI) GatewayEventsByID(w http.ResponseWriter, r *http.Request
 		pageSize = 15
 	}
 
-	events, cursor, err := gapi.store.GetEvents(ctx, gatewayID, pageSize+1, cursor)
+	events, cursor, err := gapi.store.GetEvents(ctx, gatewayID, pageSize, cursor)
 	if err != nil {
 		log.WithError(err).Error("error while getting gateway events")
 		http.Error(w, "internal error", http.StatusInternalServerError)

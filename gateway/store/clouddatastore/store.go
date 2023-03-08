@@ -178,7 +178,7 @@ func (s *Store) EventsFromTo(ctx context.Context, from, to uint64) ([]*types.Gat
 }
 
 func (s *Store) GetEvents(ctx context.Context, gatewayID types.ID, limit int, cursor string) ([]*types.GatewayEvent, string, error) {
-	q := datastore.NewQuery((&models.DBGatewayEvent{}).Entity()).FilterField("ID", "=", gatewayID.String()).Limit(limit).Order("__key__")
+	q := datastore.NewQuery((&models.DBGatewayEvent{}).Entity()).FilterField("ID", "=", gatewayID.String()).Limit(limit + 1).Order("__key__")
 
 	if cursor != "" {
 		cursorObj, err := datastore.DecodeCursor(cursor)
@@ -192,18 +192,26 @@ func (s *Store) GetEvents(ctx context.Context, gatewayID types.ID, limit int, cu
 	var events []*types.GatewayEvent
 	var dbEvent models.DBGatewayEvent
 
+	count := 0
+	var cursorObj datastore.Cursor
 	it := s.client.Run(ctx, q)
 	_, err := it.Next(&dbEvent)
 	for err == nil {
 		events = append(events, dbEvent.GatewayEvent())
+
+		// Count the number of returned objects and when we hit the provided limit
+		// get the cursor
+		count++
+		if count == limit {
+			cursorObj, err = it.Cursor()
+			if err != nil {
+				return nil, "", err
+			}
+		}
+
 		_, err = it.Next(&dbEvent)
 	}
 	if err != iterator.Done {
-		return nil, "", err
-	}
-
-	cursorObj, err := it.Cursor()
-	if err != nil && err != iterator.Done {
 		return nil, "", err
 	}
 
@@ -375,7 +383,7 @@ func (s *Store) GetAll(ctx context.Context) ([]*types.Gateway, error) {
 }
 
 func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*types.Gateway, string, error) {
-	q := datastore.NewQuery((&models.DBGateway{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit).Order("__key__")
+	q := datastore.NewQuery((&models.DBGateway{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit + 1).Order("__key__")
 
 	if cursor != "" {
 		cursorObj, err := datastore.DecodeCursor(cursor)
@@ -388,18 +396,26 @@ func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int,
 	var gateways []*types.Gateway
 	var dbGateway models.DBGateway
 
+	count := 0
+	var cursorObj datastore.Cursor
 	it := s.client.Run(ctx, q)
 	_, err := it.Next(&dbGateway)
 	for err == nil {
 		gateways = append(gateways, dbGateway.Gateway())
+
+		// Count the number of returned objects and when we hit the provided limit
+		// get the cursor
+		count++
+		if count == limit {
+			cursorObj, err = it.Cursor()
+			if err != nil {
+				return nil, "", err
+			}
+		}
+
 		_, err = it.Next(&dbGateway)
 	}
 	if err != iterator.Done {
-		return nil, "", err
-	}
-
-	cursorObj, err := it.Cursor()
-	if err != nil && err != iterator.Done {
 		return nil, "", err
 	}
 
@@ -517,7 +533,7 @@ func (s *Store) StoreGatewayOnboard(ctx context.Context, gatewayID types.ID, own
 }
 
 func (s *Store) GetGatewayOnboardsByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*models.DBGatewayOnboard, string, error) {
-	q := datastore.NewQuery((&models.DBGatewayOnboard{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit).Order("__key__")
+	q := datastore.NewQuery((&models.DBGatewayOnboard{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit + 1).Order("__key__")
 
 	if cursor != "" {
 		cursorObj, err := datastore.DecodeCursor(cursor)
@@ -530,18 +546,25 @@ func (s *Store) GetGatewayOnboardsByOwner(ctx context.Context, owner common.Addr
 	var gatewayOnboard models.DBGatewayOnboard
 	var dbGatewayOnboards []*models.DBGatewayOnboard
 
+	count := 0
+	var cursorObj datastore.Cursor
 	it := s.client.Run(ctx, q)
 	_, err := it.Next(&gatewayOnboard)
 	for err == nil {
 		dbGatewayOnboards = append(dbGatewayOnboards, gatewayOnboard.Clone())
+
+		// Count the number of returned objects and when we hit the provided limit
+		// get the cursor
+		count++
+		if count == limit {
+			cursorObj, err = it.Cursor()
+			if err != nil {
+				return nil, "", err
+			}
+		}
 		_, err = it.Next(&gatewayOnboard)
 	}
 	if err != iterator.Done {
-		return nil, "", err
-	}
-
-	cursorObj, err := it.Cursor()
-	if err != nil && err != iterator.Done {
 		return nil, "", err
 	}
 

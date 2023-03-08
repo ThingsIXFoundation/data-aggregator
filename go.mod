@@ -3,6 +3,7 @@ module github.com/ThingsIXFoundation/data-aggregator
 go 1.19
 
 require (
+	github.com/ThingsIXFoundation/frequency-plan v1.4.0
 	github.com/ThingsIXFoundation/http-utils v0.0.0-20230206101704-4a5e41dfc150
 	github.com/ThingsIXFoundation/packet-handling v1.0.7
 	github.com/ThingsIXFoundation/types v0.0.0-20230306132054-18837b1c1bc8
@@ -16,7 +17,6 @@ require (
 	cloud.google.com/go/compute v1.14.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/Kl1mn/h3-go v0.0.4 // indirect
-	github.com/ThingsIXFoundation/frequency-plan v1.4.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/biter777/countries v1.6.3 // indirect
 	github.com/brocaar/lorawan v0.0.0-20230210103351-84b137ed1908 // indirect
@@ -55,7 +55,6 @@ require (
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
 	github.com/tklauser/numcpus v0.6.0 // indirect
-	github.com/uber/h3-go/v4 v4.0.1 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb // indirect
