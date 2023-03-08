@@ -17,6 +17,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	h3light "github.com/ThingsIXFoundation/h3-light"
@@ -67,5 +69,45 @@ func (gw *DBGateway) Gateway() *types.Gateway {
 		FrequencyPlan:   utils.ClonePtr(gw.FrequencyPlan),
 		Location:        gw.Location.CellPtr(),
 		Altitude:        utils.IntPtrToUintPtr(gw.Altitude),
+	}
+}
+
+// DBGatewayOnboard is an internal type used to store gateway onboard events
+type DBGatewayOnboard struct {
+	GatewayID string    `json:"gatewayId"`
+	Owner     string    `json:"owner"`
+	Signature string    `json:"signature"`
+	Version   int       `json:"version"`
+	LocalID   string    `json:"localId"`
+	Expires   time.Time `json:"-"`
+}
+
+func (e *DBGatewayOnboard) Entity() string {
+	return "GatewayOnboard"
+}
+
+func (e *DBGatewayOnboard) Key() string {
+	return e.GatewayID
+}
+
+func (e DBGatewayOnboard) Clone() *DBGatewayOnboard {
+	return &DBGatewayOnboard{
+		GatewayID: e.GatewayID,
+		Owner:     e.Owner,
+		Signature: e.Signature,
+		Version:   e.Version,
+		LocalID:   e.LocalID,
+		Expires:   e.Expires,
+	}
+}
+
+func NewDBGatewayOnboard(gatewayID types.ID, owner common.Address, signature string, version uint8, localId string) *DBGatewayOnboard {
+	return &DBGatewayOnboard{
+		GatewayID: gatewayID.String(),
+		Owner:     utils.AddressToString(owner),
+		Signature: signature,
+		Version:   int(version),
+		LocalID:   localId,
+		Expires:   time.Now().Add(4 * time.Hour),
 	}
 }

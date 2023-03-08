@@ -71,7 +71,6 @@ func NewAPI() (*API, error) {
 	}
 
 	return api, nil
-
 }
 
 func (a *API) Serve(ctx context.Context) chan error {
@@ -97,6 +96,7 @@ func (a *API) Serve(ctx context.Context) chan error {
 
 	if a.gatewayAPI != nil {
 		a.gatewayAPI.Bind(root)
+		go a.gatewayAPI.Run(ctx)
 	}
 
 	if a.routerAPI != nil {

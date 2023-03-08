@@ -27,7 +27,6 @@ import (
 )
 
 func Run(ctx context.Context) error {
-
 	ingestorErr := make(chan error)
 	go func() {
 		defer close(ingestorErr)
