@@ -178,7 +178,7 @@ func (s *Store) EventsFromTo(ctx context.Context, from, to uint64) ([]*types.Map
 }
 
 func (s *Store) GetEvents(ctx context.Context, mapperID types.ID, limit int, cursor string) ([]*types.MapperEvent, string, error) {
-	q := datastore.NewQuery((&models.DBMapperEvent{}).Entity()).FilterField("ID", "=", mapperID.String()).Limit(limit).Order("__key__")
+	q := datastore.NewQuery((&models.DBMapperEvent{}).Entity()).FilterField("ID", "=", mapperID.String()).Limit(limit + 1).Order("__key__")
 
 	if cursor != "" {
 		cursorObj, err := datastore.DecodeCursor(cursor)
@@ -192,18 +192,26 @@ func (s *Store) GetEvents(ctx context.Context, mapperID types.ID, limit int, cur
 	var events []*types.MapperEvent
 	var dbEvent models.DBMapperEvent
 
+	count := 0
+	var cursorObj datastore.Cursor
 	it := s.client.Run(ctx, q)
 	_, err := it.Next(&dbEvent)
 	for err == nil {
 		events = append(events, dbEvent.MapperEvent())
+
+		// Count the number of returned objects and when we hit the provided limit
+		// get the cursor
+		count++
+		if count == limit {
+			cursorObj, err = it.Cursor()
+			if err != nil {
+				return nil, "", err
+			}
+		}
+
 		_, err = it.Next(&dbEvent)
 	}
 	if err != iterator.Done {
-		return nil, "", err
-	}
-
-	cursorObj, err := it.Cursor()
-	if err != nil && err != iterator.Done {
 		return nil, "", err
 	}
 
@@ -346,7 +354,7 @@ func (s *Store) Get(ctx context.Context, id types.ID) (*types.Mapper, error) {
 }
 
 func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*types.Mapper, string, error) {
-	q := datastore.NewQuery((&models.DBMapper{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit).Order("__key__")
+	q := datastore.NewQuery((&models.DBMapper{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit + 1).Order("__key__")
 
 	if cursor != "" {
 		cursorObj, err := datastore.DecodeCursor(cursor)
@@ -360,18 +368,26 @@ func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int,
 	var mappers []*types.Mapper
 	var dbMapper models.DBMapper
 
+	count := 0
+	var cursorObj datastore.Cursor
 	it := s.client.Run(ctx, q)
 	_, err := it.Next(&dbMapper)
 	for err == nil {
 		mappers = append(mappers, dbMapper.Mapper())
+
+		// Count the number of returned objects and when we hit the provided limit
+		// get the cursor
+		count++
+		if count == limit {
+			cursorObj, err = it.Cursor()
+			if err != nil {
+				return nil, "", err
+			}
+		}
+
 		_, err = it.Next(&dbMapper)
 	}
 	if err != iterator.Done {
-		return nil, "", err
-	}
-
-	cursorObj, err := it.Cursor()
-	if err != nil && err != iterator.Done {
 		return nil, "", err
 	}
 

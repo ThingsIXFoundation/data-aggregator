@@ -82,7 +82,7 @@ func (gapi *MapperAPI) OwnedMappers(w http.ResponseWriter, r *http.Request) {
 		pageSize = 15
 	}
 
-	mappers, cursor, err := gapi.store.GetByOwner(ctx, owner, pageSize+1, cursor)
+	mappers, cursor, err := gapi.store.GetByOwner(ctx, owner, pageSize, cursor)
 	if err != nil {
 		log.WithError(err).Error("unable to retrieve mappers from DB")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -152,7 +152,7 @@ func (gapi *MapperAPI) MapperEventsByID(w http.ResponseWriter, r *http.Request) 
 		pageSize = 15
 	}
 
-	events, cursor, err := gapi.store.GetEvents(ctx, mapperID, pageSize+1, cursor)
+	events, cursor, err := gapi.store.GetEvents(ctx, mapperID, pageSize, cursor)
 	if err != nil {
 		log.WithError(err).Error("error while getting mapper events")
 		http.Error(w, "internal error", http.StatusInternalServerError)

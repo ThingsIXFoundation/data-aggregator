@@ -178,7 +178,7 @@ func (s *Store) EventsFromTo(ctx context.Context, from, to uint64) ([]*types.Rou
 }
 
 func (s *Store) GetEvents(ctx context.Context, routerID types.ID, limit int, cursor string) ([]*types.RouterEvent, string, error) {
-	q := datastore.NewQuery((&models.DBRouterEvent{}).Entity()).FilterField("ID", "=", routerID.String()).Limit(limit).Order("__key__")
+	q := datastore.NewQuery((&models.DBRouterEvent{}).Entity()).FilterField("ID", "=", routerID.String()).Limit(limit + 1).Order("__key__")
 
 	if cursor != "" {
 		cursorObj, err := datastore.DecodeCursor(cursor)
@@ -192,18 +192,26 @@ func (s *Store) GetEvents(ctx context.Context, routerID types.ID, limit int, cur
 	var events []*types.RouterEvent
 	var dbEvent models.DBRouterEvent
 
+	count := 0
+	var cursorObj datastore.Cursor
 	it := s.client.Run(ctx, q)
 	_, err := it.Next(&dbEvent)
 	for err == nil {
 		events = append(events, dbEvent.RouterEvent())
+
+		// Count the number of returned objects and when we hit the provided limit
+		// get the cursor
+		count++
+		if count == limit {
+			cursorObj, err = it.Cursor()
+			if err != nil {
+				return nil, "", err
+			}
+		}
+
 		_, err = it.Next(&dbEvent)
 	}
 	if err != iterator.Done {
-		return nil, "", err
-	}
-
-	cursorObj, err := it.Cursor()
-	if err != nil && err != iterator.Done {
 		return nil, "", err
 	}
 
@@ -346,7 +354,7 @@ func (s *Store) Get(ctx context.Context, id types.ID) (*types.Router, error) {
 }
 
 func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*types.Router, string, error) {
-	q := datastore.NewQuery((&models.DBRouter{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit).Order("__key__")
+	q := datastore.NewQuery((&models.DBRouter{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit + 1).Order("__key__")
 
 	if cursor != "" {
 		cursorObj, err := datastore.DecodeCursor(cursor)
@@ -360,18 +368,26 @@ func (s *Store) GetByOwner(ctx context.Context, owner common.Address, limit int,
 	var routers []*types.Router
 	var dbRouter models.DBRouter
 
+	count := 0
+	var cursorObj datastore.Cursor
 	it := s.client.Run(ctx, q)
 	_, err := it.Next(&dbRouter)
 	for err == nil {
 		routers = append(routers, dbRouter.Router())
+
+		// Count the number of returned objects and when we hit the provided limit
+		// get the cursor
+		count++
+		if count == limit {
+			cursorObj, err = it.Cursor()
+			if err != nil {
+				return nil, "", err
+			}
+		}
+
 		_, err = it.Next(&dbRouter)
 	}
 	if err != iterator.Done {
-		return nil, "", err
-	}
-
-	cursorObj, err := it.Cursor()
-	if err != nil && err != iterator.Done {
 		return nil, "", err
 	}
 
