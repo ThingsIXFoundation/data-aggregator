@@ -30,7 +30,29 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func (gapi *GatewayAPI) GatewayOnboard(w http.ResponseWriter, r *http.Request) {
+func (gapi *GatewayAPI) GatewayOnboardByGatewayID(w http.ResponseWriter, r *http.Request) {
+	var (
+		log         = logging.WithContext(r.Context())
+		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
+		gatewayID   = chi.URLParam(r, "gatewayID")
+	)
+	defer cancel()
+
+	onboard, err := gapi.store.GetGatewayOnboardByGatewayID(ctx, gatewayID)
+	if err != nil {
+		log.WithError(err).WithField("gatewayID", gatewayID).Error("unable to retrieve gateway onboard")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if onboard != nil {
+		encoding.ReplyJSON(w, r, http.StatusOK, onboard)
+		return
+	}
+
+	http.NotFound(w, r)
+}
+
+func (gapi *GatewayAPI) GatewayOnboardsByOwner(w http.ResponseWriter, r *http.Request) {
 	var (
 		log         = logging.WithContext(r.Context())
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)

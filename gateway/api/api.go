@@ -58,7 +58,8 @@ func (gapi *GatewayAPI) Bind(root *chi.Mux) error {
 			r.Get("/map/{hex:(?i)[0-9a-f]{15}}", gapi.GatewayMap)
 
 			r.Post("/onboards/{onboarder:(?i)(0x)?[0-9a-f]{40}}/{owner:(?i)(0x)?[0-9a-f]{40}}", gapi.CreateGatewayOnboard)
-			r.Get("/onboards/{onboarder:(?i)(0x)?[0-9a-f]{40}}/{owner:(?i)(0x)?[0-9a-f]{40}}", gapi.GatewayOnboard)
+			r.Get("/onboards/{onboarder:(?i)(0x)?[0-9a-f]{40}}/{owner:(?i)(0x)?[0-9a-f]{40}}", gapi.GatewayOnboardsByOwner)
+			r.Get("/onboards/{gatewayID:(?i)(0x)?[0-9a-f]{64}}", gapi.GatewayOnboardByGatewayID)
 		})
 	})
 
