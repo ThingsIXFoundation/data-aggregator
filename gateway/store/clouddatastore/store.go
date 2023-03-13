@@ -532,6 +532,18 @@ func (s *Store) StoreGatewayOnboard(ctx context.Context, onboarder common.Addres
 	return err
 }
 
+func (s *Store) GetGatewayOnboardByGatewayID(ctx context.Context, gatewayID string) (*models.GatewayOnboard, error) {
+	dbGatewayOnboard := models.DBGatewayOnboard{GatewayID: gatewayID}
+	err := s.client.Get(ctx, clouddatastore.GetKey(&dbGatewayOnboard), &dbGatewayOnboard)
+	if errors.Is(err, datastore.ErrNoSuchEntity) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return dbGatewayOnboard.GatewayOnboard(), nil
+}
+
 func (s *Store) GetGatewayOnboardsByOwner(ctx context.Context, onboarder common.Address, owner common.Address, limit int, cursor string) ([]*models.GatewayOnboard, string, error) {
 	q := datastore.NewQuery((&models.DBGatewayOnboard{}).Entity()).
 		FilterField("Owner", "=", utils.AddressToString(owner)).
