@@ -34,6 +34,7 @@ const (
 	CONFIG_API_HTTP_LISTEN_ADDRESS         = "api.http-listen-address"
 	CONFIG_API_HTTP_LISTEN_ADDRESS_DEFAULT = "0.0.0.0:8081"
 
+	CONFIG_PUBSUB_PROJECT               = "pubsub.project"
 	CONFIG_STORE_CLOUDDATASTORE_PROJECT = "store.clouddatastore.project"
 
 	CONFIG_BLOCK_CACHE_DURATION         = "block-cache-duration"
@@ -83,6 +84,10 @@ const (
 	CONFIG_MAPPER_CHAINSYNC_POLL_INTERVAL         = "mapper.chainsync.poll-interval"
 	CONFIG_MAPPER_STORE                           = "mapper.store.type"
 	CONFIG_MAPPER_STORE_DEFAULT                   = "clouddatastore"
+
+	CONFIG_VERIFIED_MAPPING_INGESTOR_ENABLED = "verified-mapping.ingestor.enabled"
+	CONFIG_VERIFIED_MAPPING_STORE            = "verified-mapping.store.type"
+	CONFIG_VERIFIED_MAPPING_STORE_DEFAULT    = "clouddatastore"
 )
 
 func PersistentFlags(flags *pflag.FlagSet) {
@@ -96,6 +101,7 @@ func PersistentFlags(flags *pflag.FlagSet) {
 	flags.Duration(CONFIG_BLOCK_CACHE_DURATION, CONFIG_BLOCK_CACHE_DURATION_DEFAULT, "time to keep synced blocks in read/write cache and don't write them to store")
 
 	flags.String(CONFIG_STORE_CLOUDDATASTORE_PROJECT, "", "the project to use for Google Cloud Data Store")
+	flags.String(CONFIG_PUBSUB_PROJECT, "", "the project to use for Google Cloud PubSub")
 
 	flags.String(CONFIG_GATEWAY_CONTRACT, "", "the address of the gateway registry contract")
 	flags.Bool(CONFIG_GATEWAY_API_ENABLED, true, "enable the API for gateways")
@@ -138,6 +144,9 @@ func PersistentFlags(flags *pflag.FlagSet) {
 	flags.Uint64(CONFIG_MAPPER_CHAINSYNC_MAX_BLOCK_SCAN_RANGE, 10000, "the number of blocks to scan at most at once")
 	flags.Duration(CONFIG_MAPPER_CHAINSYNC_POLL_INTERVAL, 1*time.Minute, "the interval to poll the RPC node for new transactions")
 	flags.String(CONFIG_MAPPER_STORE, CONFIG_MAPPER_STORE_DEFAULT, "the store to use")
+
+	flags.Bool(CONFIG_VERIFIED_MAPPING_INGESTOR_ENABLED, false, "enable the ingestor for verified-mapping records")
+	flags.String(CONFIG_VERIFIED_MAPPING_STORE, CONFIG_VERIFIED_MAPPING_STORE_DEFAULT, "the store to use")
 }
 
 func AddressFromConfig(key string) common.Address {

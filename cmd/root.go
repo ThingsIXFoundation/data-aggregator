@@ -28,6 +28,7 @@ import (
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/gateway"
 	"github.com/ThingsIXFoundation/data-aggregator/mapper"
+	"github.com/ThingsIXFoundation/data-aggregator/mapping"
 	"github.com/ThingsIXFoundation/data-aggregator/router"
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/sirupsen/logrus"
@@ -122,6 +123,15 @@ func Run(cmd *cobra.Command, args []string) {
 		}
 	}()
 
+	mappingErr := make(chan error)
+	go func() {
+		defer close(mappingErr)
+		if err := mapping.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			logrus.WithError(err).Error("verified mapping functions failed")
+			mapperErr <- err
+		}
+	}()
+
 	apiErr := make(chan error)
 	go func() {
 		defer close(apiErr)
@@ -140,6 +150,8 @@ func Run(cmd *cobra.Command, args []string) {
 	case <-routerErr:
 		shutdown()
 	case <-mapperErr:
+		shutdown()
+	case <-mappingErr:
 		shutdown()
 	case <-apiErr:
 		shutdown()
