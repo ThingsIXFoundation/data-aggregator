@@ -25,7 +25,7 @@ import (
 )
 
 func Run(ctx context.Context) error {
-	if viper.GetBool(config.CONFIG_VERIFIED_MAPPING_INGESTOR_ENABLED) {
+	if viper.GetBool(config.CONFIG_MAPPING_INGESTOR_ENABLED) {
 		ri, err := NewMappingIngestor()
 		if err != nil {
 			logrus.WithError(err).Error("error while creating verified mapping ingestor")

@@ -29,10 +29,10 @@ type Store interface {
 }
 
 func NewStore() (Store, error) {
-	store := viper.GetString(config.CONFIG_VERIFIED_MAPPING_STORE)
+	store := viper.GetString(config.CONFIG_MAPPING_STORE)
 	if store == "clouddatastore" {
 		return clouddatastore.NewStore(context.Background())
 	} else {
-		return nil, fmt.Errorf("invalid store type: %s", viper.GetString(config.CONFIG_VERIFIED_MAPPING_STORE))
+		return nil, fmt.Errorf("invalid store type: %s", viper.GetString(config.CONFIG_MAPPING_STORE))
 	}
 }

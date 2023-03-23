@@ -85,9 +85,10 @@ const (
 	CONFIG_MAPPER_STORE                           = "mapper.store.type"
 	CONFIG_MAPPER_STORE_DEFAULT                   = "clouddatastore"
 
-	CONFIG_VERIFIED_MAPPING_INGESTOR_ENABLED = "verified-mapping.ingestor.enabled"
-	CONFIG_VERIFIED_MAPPING_STORE            = "verified-mapping.store.type"
-	CONFIG_VERIFIED_MAPPING_STORE_DEFAULT    = "clouddatastore"
+	CONFIG_MAPPING_API_ENABLED      = "mapping.api.enabled"
+	CONFIG_MAPPING_INGESTOR_ENABLED = "mapping.ingestor.enabled"
+	CONFIG_MAPPING_STORE            = "mapping.store.type"
+	CONFIG_MAPPING_STORE_DEFAULT    = "clouddatastore"
 )
 
 func PersistentFlags(flags *pflag.FlagSet) {
@@ -145,8 +146,10 @@ func PersistentFlags(flags *pflag.FlagSet) {
 	flags.Duration(CONFIG_MAPPER_CHAINSYNC_POLL_INTERVAL, 1*time.Minute, "the interval to poll the RPC node for new transactions")
 	flags.String(CONFIG_MAPPER_STORE, CONFIG_MAPPER_STORE_DEFAULT, "the store to use")
 
-	flags.Bool(CONFIG_VERIFIED_MAPPING_INGESTOR_ENABLED, false, "enable the ingestor for verified-mapping records")
-	flags.String(CONFIG_VERIFIED_MAPPING_STORE, CONFIG_VERIFIED_MAPPING_STORE_DEFAULT, "the store to use")
+	flags.Bool(CONFIG_MAPPING_INGESTOR_ENABLED, false, "enable the ingestor for mapping records")
+	flags.Bool(CONFIG_MAPPING_API_ENABLED, false, "enable the API for mapping records")
+	flags.String(CONFIG_MAPPING_STORE, CONFIG_MAPPING_STORE_DEFAULT, "the store to use")
+
 }
 
 func AddressFromConfig(key string) common.Address {
