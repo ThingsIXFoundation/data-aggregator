@@ -544,14 +544,29 @@ func (s *Store) GetInCell(ctx context.Context, cell h3light.Cell) ([]*types.Gate
 	return gateways, nil
 }
 
-func (s *Store) StoreGatewayOnboard(ctx context.Context, gatewayID types.ID, owner common.Address, signature string, version uint8, localId string) error {
-	dbonboard := *models.NewDBGatewayOnboard(gatewayID, owner, signature, version, localId)
+func (s *Store) StoreGatewayOnboard(ctx context.Context, onboarder common.Address, gatewayID types.ID, owner common.Address, signature string, version uint8, localId string) error {
+	dbonboard := *models.NewDBGatewayOnboard(gatewayID, owner, signature, version, localId, onboarder)
 	_, err := s.client.Put(ctx, daclouddatastore.GetKey(&dbonboard), &dbonboard)
 	return err
 }
 
-func (s *Store) GetGatewayOnboardsByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*models.DBGatewayOnboard, string, error) {
-	q := datastore.NewQuery((&models.DBGatewayOnboard{}).Entity()).FilterField("Owner", "=", utils.AddressToString(owner)).Limit(limit + 1).Order("__key__")
+func (s *Store) GetGatewayOnboardByGatewayID(ctx context.Context, gatewayID string) (*models.GatewayOnboard, error) {
+	dbGatewayOnboard := models.DBGatewayOnboard{GatewayID: gatewayID}
+	err := s.client.Get(ctx, clouddatastore.GetKey(&dbGatewayOnboard), &dbGatewayOnboard)
+	if errors.Is(err, datastore.ErrNoSuchEntity) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return dbGatewayOnboard.GatewayOnboard(), nil
+}
+
+func (s *Store) GetGatewayOnboardsByOwner(ctx context.Context, onboarder common.Address, owner common.Address, limit int, cursor string) ([]*models.GatewayOnboard, string, error) {
+	q := datastore.NewQuery((&models.DBGatewayOnboard{}).Entity()).
+		FilterField("Owner", "=", utils.AddressToString(owner)).
+		FilterField("Onboarder", "=", utils.AddressToString(onboarder)).
+		Limit(limit + 1).Order("__key__")
 
 	if cursor != "" {
 		cursorObj, err := datastore.DecodeCursor(cursor)
@@ -562,14 +577,14 @@ func (s *Store) GetGatewayOnboardsByOwner(ctx context.Context, owner common.Addr
 	}
 
 	var gatewayOnboard models.DBGatewayOnboard
-	var dbGatewayOnboards []*models.DBGatewayOnboard
+	var dbGatewayOnboards []*models.GatewayOnboard
 
 	count := 0
 	var cursorObj datastore.Cursor
 	it := s.client.Run(ctx, q)
 	_, err := it.Next(&gatewayOnboard)
 	for err == nil {
-		dbGatewayOnboards = append(dbGatewayOnboards, gatewayOnboard.Clone())
+		dbGatewayOnboards = append(dbGatewayOnboards, gatewayOnboard.GatewayOnboard())
 
 		// Count the number of returned objects and when we hit the provided limit
 		// get the cursor

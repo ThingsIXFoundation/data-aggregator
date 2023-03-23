@@ -30,13 +30,36 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func (gapi *GatewayAPI) GatewayOnboard(w http.ResponseWriter, r *http.Request) {
+func (gapi *GatewayAPI) GatewayOnboardByGatewayID(w http.ResponseWriter, r *http.Request) {
+	var (
+		log         = logging.WithContext(r.Context())
+		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
+		gatewayID   = chi.URLParam(r, "gatewayID")
+	)
+	defer cancel()
+
+	onboard, err := gapi.store.GetGatewayOnboardByGatewayID(ctx, gatewayID)
+	if err != nil {
+		log.WithError(err).WithField("gatewayID", gatewayID).Error("unable to retrieve gateway onboard")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if onboard != nil {
+		encoding.ReplyJSON(w, r, http.StatusOK, onboard)
+		return
+	}
+
+	http.NotFound(w, r)
+}
+
+func (gapi *GatewayAPI) GatewayOnboardsByOwner(w http.ResponseWriter, r *http.Request) {
 	var (
 		log         = logging.WithContext(r.Context())
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
 		cursor      = r.URL.Query().Get("cursor")
 		pageSize, _ = strconv.Atoi(r.URL.Query().Get("pageSize"))
 		owner       = common.HexToAddress(chi.URLParam(r, "owner"))
+		onboarder   = common.HexToAddress(chi.URLParam(r, "onboarder"))
 	)
 	defer cancel()
 
@@ -44,7 +67,7 @@ func (gapi *GatewayAPI) GatewayOnboard(w http.ResponseWriter, r *http.Request) {
 		pageSize = 15
 	}
 
-	onboards, cursor, err := gapi.store.GetGatewayOnboardsByOwner(ctx, owner, pageSize, cursor)
+	onboards, cursor, err := gapi.store.GetGatewayOnboardsByOwner(ctx, onboarder, owner, pageSize, cursor)
 	if err != nil {
 		log.WithError(err).WithField("owner", owner).Error("unable to retrieve gateway onboards")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -73,6 +96,7 @@ func (gapi *GatewayAPI) CreateGatewayOnboard(w http.ResponseWriter, r *http.Requ
 	var (
 		log         = logging.WithContext(r.Context())
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
+		onboarder   = common.HexToAddress(chi.URLParam(r, "onboarder"))
 		owner       = common.HexToAddress(chi.URLParam(r, "owner"))
 		req         = struct {
 			GatewayID types.ID `json:"gatewayId"`
@@ -89,7 +113,7 @@ func (gapi *GatewayAPI) CreateGatewayOnboard(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if err := gapi.store.StoreGatewayOnboard(ctx, req.GatewayID, owner, req.Signature, req.Version, req.LocalID); err != nil {
+	if err := gapi.store.StoreGatewayOnboard(ctx, onboarder, req.GatewayID, owner, req.Signature, req.Version, req.LocalID); err != nil {
 		log.WithError(err).Error("unable to store gateway onboard message")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

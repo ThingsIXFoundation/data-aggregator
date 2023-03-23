@@ -58,8 +58,9 @@ type Store interface {
 	GetCountInCellAtRes(ctx context.Context, cell h3light.Cell, res int) (map[h3light.Cell]uint64, error)
 	GetInCell(ctx context.Context, cell h3light.Cell) ([]*types.Gateway, error)
 
-	StoreGatewayOnboard(ctx context.Context, gatewayID types.ID, owner common.Address, signature string, version uint8, localId string) error
-	GetGatewayOnboardsByOwner(ctx context.Context, owner common.Address, limit int, cursor string) ([]*models.DBGatewayOnboard, string, error)
+	StoreGatewayOnboard(ctx context.Context, onboarder common.Address, gatewayID types.ID, owner common.Address, signature string, version uint8, localId string) error
+	GetGatewayOnboardsByOwner(ctx context.Context, onboarder common.Address, owner common.Address, limit int, cursor string) ([]*models.GatewayOnboard, string, error)
+	GetGatewayOnboardByGatewayID(ctx context.Context, gatewayID string) (*models.GatewayOnboard, error)
 
 	PurgeExpiredOnboards(ctx context.Context) error
 }
