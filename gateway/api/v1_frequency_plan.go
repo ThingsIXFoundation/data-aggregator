@@ -69,7 +69,7 @@ func (gapi *GatewayAPI) FrequencyPlansAtLocation(w http.ResponseWriter, r *http.
 	resp := &ValidFrequencyPlansForLocation{}
 
 	for _, band := range frequency_plan.AllBands {
-		if valid, _ := frequency_plan.IsValidBandForHex(band, cell); valid {
+		if valid := frequency_plan.IsValidBandForHex(band, cell); valid {
 			resp.Plans = append(resp.Plans, string(band))
 			resp.BlockchainPlans = append(resp.BlockchainPlans, uint(band.ToBlockchain()))
 		}
