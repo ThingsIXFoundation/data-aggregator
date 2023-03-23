@@ -3,6 +3,7 @@ module github.com/ThingsIXFoundation/data-aggregator
 go 1.19
 
 require (
+	cloud.google.com/go/pubsub v1.28.0
 	github.com/ThingsIXFoundation/frequency-plan v1.4.1
 	github.com/ThingsIXFoundation/http-utils v0.0.0-20230206101704-4a5e41dfc150
 	github.com/ThingsIXFoundation/packet-handling v1.0.8
@@ -16,6 +17,7 @@ require (
 	cloud.google.com/go v0.110.0 // indirect
 	cloud.google.com/go/compute v1.19.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/iam v0.12.0 // indirect
 	github.com/Kl1mn/h3-go v0.0.4 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/biter777/countries v1.6.4 // indirect
@@ -60,6 +62,7 @@ require (
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

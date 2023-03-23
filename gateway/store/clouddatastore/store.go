@@ -177,6 +177,24 @@ func (s *Store) EventsFromTo(ctx context.Context, from, to uint64) ([]*types.Gat
 	return events, nil
 }
 
+func (s *Store) GetEventsBetween(ctx context.Context, start, end time.Time) ([]*types.GatewayEvent, error) {
+	var dbEvents []*models.DBGatewayEvent
+
+	q := datastore.NewQuery((&models.DBGatewayEvent{}).Entity()).FilterField("Time", ">=", start).FilterField("Time", "< ", end).Order("Time")
+
+	_, err := s.client.GetAll(ctx, q, &dbEvents)
+	if err != nil {
+		return nil, err
+	}
+
+	events := make([]*types.GatewayEvent, len(dbEvents))
+	for i, dbevent := range dbEvents {
+		events[i] = dbevent.GatewayEvent()
+	}
+
+	return events, nil
+}
+
 func (s *Store) GetEvents(ctx context.Context, gatewayID types.ID, limit int, cursor string) ([]*types.GatewayEvent, string, error) {
 	q := datastore.NewQuery((&models.DBGatewayEvent{}).Entity()).FilterField("ID", "=", gatewayID.String()).Limit(limit + 1).Order("__key__")
 

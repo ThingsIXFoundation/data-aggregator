@@ -43,6 +43,7 @@ type Store interface {
 	EventsFromTo(ctx context.Context, from, to uint64) ([]*types.GatewayEvent, error)
 	FirstEvent(ctx context.Context) (*types.GatewayEvent, error)
 	GetEvents(ctx context.Context, gatewayID types.ID, limit int, cursor string) ([]*types.GatewayEvent, string, error)
+	GetEventsBetween(ctx context.Context, start, end time.Time) ([]*types.GatewayEvent, error)
 
 	StoreHistory(ctx context.Context, history *types.GatewayHistory) error
 	GetHistoryAt(ctx context.Context, id types.ID, at time.Time) (*types.GatewayHistory, error)
