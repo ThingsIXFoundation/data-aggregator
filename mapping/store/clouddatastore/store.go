@@ -161,7 +161,7 @@ func (s *Store) GetMapping(ctx context.Context, id types.ID) (*types.MappingReco
 func (s *Store) GetDiscoveryRecordsForMapping(ctx context.Context, mappingID types.ID) ([]*types.MappingDiscoveryReceiptRecord, error) {
 	var dbDiscoveryRecords []*models.DBMappingDiscoveryReceiptRecord
 
-	q := datastore.NewQuery((&models.DBMappingRecord{}).Entity()).FilterField("MappingID", "=", mappingID.String())
+	q := datastore.NewQuery((&models.DBMappingDiscoveryReceiptRecord{}).Entity()).FilterField("MappingID", "=", mappingID.String())
 	_, err := s.client.GetAll(ctx, q, &dbDiscoveryRecords)
 	if err != nil {
 		return nil, err
@@ -178,7 +178,7 @@ func (s *Store) GetDiscoveryRecordsForMapping(ctx context.Context, mappingID typ
 func (s *Store) GetDownlinkRecordsForMapping(ctx context.Context, mappingID types.ID) ([]*types.MappingDownlinkReceiptRecord, error) {
 	var dbDownlinkRecords []*models.DBMappingDownlinkReceiptRecord
 
-	q := datastore.NewQuery((&models.DBMappingRecord{}).Entity()).FilterField("MappingID", "=", mappingID.String())
+	q := datastore.NewQuery((&models.DBMappingDownlinkReceiptRecord{}).Entity()).FilterField("MappingID", "=", mappingID.String())
 	_, err := s.client.GetAll(ctx, q, &dbDownlinkRecords)
 	if err != nil {
 		return nil, err

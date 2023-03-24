@@ -39,7 +39,7 @@ func (mapi *MappingAPI) Bind(root *chi.Mux) error {
 	root.Route("/mapping", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Get("/{id:(?i)(0x)?[0-9a-f]{64}}", mapi.GetMappingById)
-			r.Get("/mapper//{id:(?i)(0x)?[0-9a-f]{64}}/recent", mapi.GetRecentMappingsForMapper)
+			r.Get("/mapper/{id:(?i)(0x)?[0-9a-f]{64}}/recent", mapi.GetRecentMappingsForMapper)
 		})
 	})
 
