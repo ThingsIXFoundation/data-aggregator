@@ -92,8 +92,16 @@ func decodeLogToMapperEvent(ctx context.Context, log *etypes.Log, client *ethcli
 	case MapperTransferredEvent:
 		event.Type = types.MapperTransfered
 		event.ID = types.ID(log.Topics[1])
-		event.OldOwner = utils.Ptr(common.BytesToAddress(log.Topics[2].Bytes()))
-		event.NewOwner = utils.Ptr(common.BytesToAddress(log.Topics[3].Bytes()))
+		oldMapper, err := mapperDetails(mapperRegistry, contractAddress, log.BlockNumber-1, event.ID)
+		if err != nil {
+			return nil, err
+		}
+		newMapper, err := mapperDetails(mapperRegistry, contractAddress, log.BlockNumber, event.ID)
+		if err != nil {
+			return nil, err
+		}
+		event.OldOwner = oldMapper.Owner
+		event.NewOwner = newMapper.Owner
 	default:
 		logrus.WithFields(logrus.Fields{
 			"block":    log.BlockHash,
