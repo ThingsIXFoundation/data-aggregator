@@ -31,7 +31,7 @@ import (
 type Store interface {
 	StoreMapping(ctx context.Context, mappingRecord *types.MappingRecord) error
 	GetMapping(ctx context.Context, mappingID types.ID) (*types.MappingRecord, error)
-	GetRecentMappingsForMapper(ctx context.Context, mapperID types.ID, since time.Duration) ([]*types.MappingRecord, error)
+	GetMappingsForMapperInPeriod(ctx context.Context, mapperID types.ID, start time.Time, end time.Time, limit int, cursor string) ([]*types.MappingRecord, string, error)
 	GetRecentMappingsInRegion(ctx context.Context, region h3light.Cell, since time.Duration) ([]*types.MappingRecord, error)
 	GetValidMappingsInRegionBetween(ctx context.Context, region h3light.Cell, start time.Time, end time.Time) ([]*types.MappingRecord, error)
 

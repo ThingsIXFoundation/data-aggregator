@@ -196,7 +196,7 @@ func (s *Store) GetEventsBetween(ctx context.Context, start, end time.Time) ([]*
 }
 
 func (s *Store) GetEvents(ctx context.Context, gatewayID types.ID, limit int, cursor string) ([]*types.GatewayEvent, string, error) {
-	q := datastore.NewQuery((&models.DBGatewayEvent{}).Entity()).FilterField("ID", "=", gatewayID.String()).Limit(limit + 1).Order("__key__")
+	q := datastore.NewQuery((&models.DBGatewayEvent{}).Entity()).FilterField("ID", "=", gatewayID.String()).Limit(limit + 1).Order("-Time")
 
 	if cursor != "" {
 		cursorObj, err := datastore.DecodeCursor(cursor)

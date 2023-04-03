@@ -28,6 +28,7 @@ import (
 	"github.com/ThingsIXFoundation/types"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"google.golang.org/api/iterator"
 )
 
 type Store struct {
@@ -145,12 +146,12 @@ func (s *Store) GetMapping(ctx context.Context, id types.ID) (*types.MappingReco
 	}
 
 	record := dbMappingRecord.MappingRecord()
-	record.DiscoveryReceiptRecords, err = s.GetDiscoveryRecordsForMapping(ctx, record.ID)
+	record.DiscoveryReceiptRecords, err = s.getDiscoveryRecordsForMapping(ctx, record.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	record.DownlinkReceiptRecords, err = s.GetDownlinkRecordsForMapping(ctx, record.ID)
+	record.DownlinkReceiptRecords, err = s.getDownlinkRecordsForMapping(ctx, record.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +159,7 @@ func (s *Store) GetMapping(ctx context.Context, id types.ID) (*types.MappingReco
 	return record, nil
 }
 
-func (s *Store) GetDiscoveryRecordsForMapping(ctx context.Context, mappingID types.ID) ([]*types.MappingDiscoveryReceiptRecord, error) {
+func (s *Store) getDiscoveryRecordsForMapping(ctx context.Context, mappingID types.ID) ([]*types.MappingDiscoveryReceiptRecord, error) {
 	var dbDiscoveryRecords []*models.DBMappingDiscoveryReceiptRecord
 
 	q := datastore.NewQuery((&models.DBMappingDiscoveryReceiptRecord{}).Entity()).FilterField("MappingID", "=", mappingID.String())
@@ -175,7 +176,7 @@ func (s *Store) GetDiscoveryRecordsForMapping(ctx context.Context, mappingID typ
 	return discoveryRecords, nil
 }
 
-func (s *Store) GetDownlinkRecordsForMapping(ctx context.Context, mappingID types.ID) ([]*types.MappingDownlinkReceiptRecord, error) {
+func (s *Store) getDownlinkRecordsForMapping(ctx context.Context, mappingID types.ID) ([]*types.MappingDownlinkReceiptRecord, error) {
 	var dbDownlinkRecords []*models.DBMappingDownlinkReceiptRecord
 
 	q := datastore.NewQuery((&models.DBMappingDownlinkReceiptRecord{}).Entity()).FilterField("MappingID", "=", mappingID.String())
@@ -191,21 +192,50 @@ func (s *Store) GetDownlinkRecordsForMapping(ctx context.Context, mappingID type
 
 	return downlinkRecords, nil
 }
-func (s *Store) GetRecentMappingsForMapper(ctx context.Context, mapperID types.ID, since time.Duration) ([]*types.MappingRecord, error) {
-	var dbMappingRecords []*models.DBMappingRecord
+func (s *Store) GetMappingsForMapperInPeriod(ctx context.Context, mapperID types.ID, start time.Time, end time.Time, limit int, cursor string) ([]*types.MappingRecord, string, error) {
+	q := datastore.NewQuery((&models.DBMappingRecord{}).Entity()).
+		FilterField("MapperID", "=", mapperID.String()).
+		FilterField("ReceivedTime", ">=", start).
+		FilterField("ReceivedTime", "<", end).
+		Order("-ReceivedTime")
 
-	q := datastore.NewQuery((&models.DBMappingRecord{}).Entity()).FilterField("MapperID", "=", mapperID.String()).FilterField("ReceivedTime", ">=", time.Now().Add(-since)).Order("-ReceivedTime")
-	_, err := s.client.GetAll(ctx, q, &dbMappingRecords)
-	if err != nil {
-		return nil, err
+	if cursor != "" {
+		cursorObj, err := datastore.DecodeCursor(cursor)
+		if err != nil {
+			return nil, "", err
+		}
+
+		q = q.Start(cursorObj)
 	}
 
-	mappingRecords := make([]*types.MappingRecord, len(dbMappingRecords))
-	for i, dbRecord := range dbMappingRecords {
-		mappingRecords[i] = dbRecord.MappingRecord()
+	var mappingRecords []*types.MappingRecord
+	var dbMappingRecord models.DBMappingRecord
+
+	count := 0
+	var cursorObj datastore.Cursor
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbMappingRecord)
+	for err == nil {
+		mappingRecords = append(mappingRecords, dbMappingRecord.MappingRecord())
+
+		// Count the number of returned objects and when we hit the provided limit
+		// get the cursor
+		count++
+		if count == limit {
+			cursorObj, err = it.Cursor()
+			if err != nil {
+				return nil, "", err
+			}
+		}
+
+		_, err = it.Next(&dbMappingRecord)
+	}
+	if err != iterator.Done {
+		return nil, "", err
 	}
 
-	return mappingRecords, nil
+	return mappingRecords, cursorObj.String(), nil
+
 }
 
 func (s *Store) GetRecentMappingsInRegion(ctx context.Context, region h3light.Cell, since time.Duration) ([]*types.MappingRecord, error) {
@@ -221,12 +251,12 @@ func (s *Store) GetRecentMappingsInRegion(ctx context.Context, region h3light.Ce
 	mappingRecords := make([]*types.MappingRecord, len(dbMappingRecords))
 	for i, dbRecord := range dbMappingRecords {
 		mappingRecords[i] = dbRecord.MappingRecord()
-		mappingRecords[i].DiscoveryReceiptRecords, err = s.GetDiscoveryRecordsForMapping(ctx, dbRecord.MappingRecord().ID)
+		mappingRecords[i].DiscoveryReceiptRecords, err = s.getDiscoveryRecordsForMapping(ctx, dbRecord.MappingRecord().ID)
 		if err != nil {
 			logrus.WithError(err).Error("error while getting discovery records")
 			return nil, err
 		}
-		mappingRecords[i].DownlinkReceiptRecords, err = s.GetDownlinkRecordsForMapping(ctx, dbRecord.MappingRecord().ID)
+		mappingRecords[i].DownlinkReceiptRecords, err = s.getDownlinkRecordsForMapping(ctx, dbRecord.MappingRecord().ID)
 		if err != nil {
 			logrus.WithError(err).Error("error while getting downlink records")
 			return nil, err

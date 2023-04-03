@@ -19,12 +19,33 @@ package api
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
+	"github.com/ThingsIXFoundation/types"
 )
+
+func replyMappingsCursor(mappings []*types.MappingRecord, cursor string, pageSize int, w http.ResponseWriter, r *http.Request) {
+	if len(mappings) <= pageSize {
+		cursor = ""
+	} else {
+		mappings = mappings[:pageSize]
+	}
+
+	if cursor != "" {
+		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
+			"cursor":   cursor,
+			"mappings": mappingsOrEmptySlice(mappings),
+		})
+	} else {
+		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
+			"mappings": mappingsOrEmptySlice(mappings),
+		})
+	}
+}
 
 func (mapi *MappingAPI) GetMappingById(w http.ResponseWriter, r *http.Request) {
 	var (
@@ -42,25 +63,32 @@ func (mapi *MappingAPI) GetMappingById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	encoding.ReplyJSON(w, r, http.StatusOK, mappingRecord)
-	return
 }
 
 func (mapi *MappingAPI) GetRecentMappingsForMapper(w http.ResponseWriter, r *http.Request) {
 	var (
 		log         = logging.WithContext(r.Context())
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
+		cursor      = r.URL.Query().Get("cursor")
+		pageSize, _ = strconv.Atoi(r.URL.Query().Get("pageSize"))
 		mapperID    = utils.IDFromRequest(r, "id")
 		since       = 24 * time.Hour
 	)
 	defer cancel()
 
-	recentMappingRecords, err := mapi.store.GetRecentMappingsForMapper(ctx, mapperID, since)
+	if pageSize == 0 {
+		pageSize = 15
+	}
+
+	start := time.Now().Add(-1 * time.Hour)
+	end := start.Add(since)
+
+	recentMappingRecords, cursor, err := mapi.store.GetMappingsForMapperInPeriod(ctx, mapperID, start, end, pageSize, cursor)
 	if err != nil {
 		log.WithError(err).Error("unable to retrieve mapping-record from DB")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	encoding.ReplyJSON(w, r, http.StatusOK, recentMappingRecords)
-	return
+	replyMappingsCursor(recentMappingRecords, cursor, pageSize, w, r)
 }

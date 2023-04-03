@@ -39,3 +39,8 @@ indexes:
   properties:
     - name: OldOwner
     - name: NewOwner
+- kind: MappingRecord
+  properties:
+   - name: MapperID
+   - name: ReceivedTime
+     direction: desc

@@ -89,6 +89,9 @@ const (
 	CONFIG_MAPPING_INGESTOR_ENABLED = "mapping.ingestor.enabled"
 	CONFIG_MAPPING_STORE            = "mapping.store.type"
 	CONFIG_MAPPING_STORE_DEFAULT    = "clouddatastore"
+
+	CONFIG_REWARDS_STORE         = "rewards.store.type"
+	CONFIG_REWARDS_STORE_DEFAULT = "clouddatastore"
 )
 
 func PersistentFlags(flags *pflag.FlagSet) {
@@ -149,6 +152,8 @@ func PersistentFlags(flags *pflag.FlagSet) {
 	flags.Bool(CONFIG_MAPPING_INGESTOR_ENABLED, false, "enable the ingestor for mapping records")
 	flags.Bool(CONFIG_MAPPING_API_ENABLED, false, "enable the API for mapping records")
 	flags.String(CONFIG_MAPPING_STORE, CONFIG_MAPPING_STORE_DEFAULT, "the store to use")
+
+	flags.String(CONFIG_REWARDS_STORE, CONFIG_REWARDS_STORE_DEFAULT, "the store to use")
 
 }
 

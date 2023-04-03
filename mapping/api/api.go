@@ -18,6 +18,7 @@ package api
 
 import (
 	"github.com/ThingsIXFoundation/data-aggregator/mapping/store"
+	"github.com/ThingsIXFoundation/types"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -44,4 +45,11 @@ func (mapi *MappingAPI) Bind(root *chi.Mux) error {
 	})
 
 	return nil
+}
+
+func mappingsOrEmptySlice(mappings []*types.MappingRecord) []*types.MappingRecord {
+	if mappings == nil {
+		return []*types.MappingRecord{}
+	}
+	return mappings
 }

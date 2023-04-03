@@ -178,7 +178,7 @@ func (s *Store) EventsFromTo(ctx context.Context, from, to uint64) ([]*types.Map
 }
 
 func (s *Store) GetEvents(ctx context.Context, mapperID types.ID, limit int, cursor string) ([]*types.MapperEvent, string, error) {
-	q := datastore.NewQuery((&models.DBMapperEvent{}).Entity()).FilterField("ID", "=", mapperID.String()).Limit(limit + 1).Order("__key__")
+	q := datastore.NewQuery((&models.DBMapperEvent{}).Entity()).FilterField("ID", "=", mapperID.String()).Limit(limit + 1).Order("-Time")
 
 	if cursor != "" {
 		cursorObj, err := datastore.DecodeCursor(cursor)
