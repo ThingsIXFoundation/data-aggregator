@@ -16,32 +16,20 @@
 
 package api
 
-import "github.com/ThingsIXFoundation/types"
+import (
+	h3light "github.com/ThingsIXFoundation/h3-light"
+	"github.com/ThingsIXFoundation/types"
+)
 
-type MappingHexInfo struct {
-	
+type AssumedCoverageHexContainer struct {
+	Hexes []h3light.Cell `json:"hexes,omitempty"`
 }
 
-type GatewayHexInfo struct {
-	Count    int             `json:"count"`
-	Gateways []types.Gateway `json:"gateways,omitempty"`
+type CoverageHexContainer struct {
+	Hexes []*types.CoverageHistory `json:"hexes,omitempty"`
 }
 
-type GatewayHex struct {
-	Hexes map[string]GatewayHexInfo `json:"hexes,omitempty"`
-}
-
-type Res0GatewayHex struct {
-	Hexes map[string]GatewayHex `json:"hexes,omitempty"`
-}
-
-type PendingGatewayEventsResponse struct {
-	Confirmations uint64                `json:"confirmations"`
-	SyncedTo      uint64                `json:"syncedTo"`
-	Events        []*types.GatewayEvent `json:"events"`
-}
-
-type ValidFrequencyPlansForLocation struct {
-	Plans           []string `json:"plans"`
-	BlockchainPlans []uint   `json:"blockchainPlans"`
+type MinMaxCoverageDates struct {
+	Min string `json:"min"`
+	Max string `json:"max"`
 }

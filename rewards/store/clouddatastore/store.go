@@ -18,7 +18,6 @@ package clouddatastore
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"cloud.google.com/go/datastore"
@@ -28,27 +27,27 @@ import (
 	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/viper"
+	"google.golang.org/api/iterator"
 )
 
 type Store struct {
 	client *datastore.Client
 }
 
-// var _ store.Store = &Store{}
+//var _ store.Store = &Store{}
 
 // GetAccountRewardsAt implements store.Store
 func (s *Store) GetAccountRewardsAt(ctx context.Context, account common.Address, at time.Time) (*types.AccountRewardHistory, error) {
-	q := &models.DBAccountRewardHistory{
-		Account: account.String(),
-		Date:    at,
-	}
+	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).FilterField("Account", "=", account.String()).FilterField("Date", "<=", at).Order("-Date")
 
 	ret := models.DBAccountRewardHistory{}
 
-	err := s.client.Get(ctx, clouddatastore.GetKey(q), &ret)
-	if err != nil && errors.Is(err, datastore.ErrNoSuchEntity) {
-		return nil, nil
-	} else if err != nil {
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&ret)
+	if err != nil {
+		if err == iterator.Done {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -89,18 +88,42 @@ func (*Store) GetMapperRewardsAt(ctx context.Context, mapperID types.ID, at time
 }
 
 // StoreAccountRewards implements store.Store
-func (*Store) StoreAccountRewards(ctx context.Context, accountRewardHistories []*types.AccountRewardHistory) error {
-	panic("unimplemented")
+func (s *Store) StoreAccountRewards(ctx context.Context, accountRewardHistories []*types.AccountRewardHistory) error {
+	for _, ar := range accountRewardHistories {
+		dbar := models.NewDBAccountRewardHistory(ar)
+		_, err := s.client.Put(ctx, clouddatastore.GetKey(dbar), dbar)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // StoreGatewayRewards implements store.Store
-func (*Store) StoreGatewayRewards(ctx context.Context, gatewayRewardHistories []*types.GatewayRewardHistory) error {
-	panic("unimplemented")
+func (s *Store) StoreGatewayRewards(ctx context.Context, gatewayRewardHistories []*types.GatewayRewardHistory) error {
+	for _, gr := range gatewayRewardHistories {
+		dbgr := models.NewDBGatewayRewardHistory(gr)
+		_, err := s.client.Put(ctx, clouddatastore.GetKey(dbgr), dbgr)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // StoreMapperRewards implements store.Store
-func (*Store) StoreMapperRewards(ctx context.Context, mapperRewardHistories []*types.MapperRewardHistory) error {
-	panic("unimplemented")
+func (s *Store) StoreMapperRewards(ctx context.Context, mapperRewardHistories []*types.MapperRewardHistory) error {
+	for _, mr := range mapperRewardHistories {
+		dbmr := models.NewDBMapperRewardHistory(mr)
+		_, err := s.client.Put(ctx, clouddatastore.GetKey(dbmr), dbmr)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func NewStore(ctx context.Context) (*Store, error) {
@@ -115,4 +138,18 @@ func NewStore(ctx context.Context) (*Store, error) {
 
 	return s, nil
 
+}
+
+// GetLatestRewardsDate implements store.Store
+func (s *Store) GetLatestRewardsDate(ctx context.Context) (time.Time, error) {
+	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).Limit(1).Order("-Date")
+
+	var dbAccountRewardHistory models.DBAccountRewardHistory
+
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbAccountRewardHistory)
+	if err != nil && err != iterator.Done {
+		return time.Time{}, err
+	}
+	return dbAccountRewardHistory.Date, nil
 }

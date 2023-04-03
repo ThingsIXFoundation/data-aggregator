@@ -35,12 +35,41 @@ indexes:
   properties:
     - name: OldOwner
     - name: NewOwner
+- kind: GatewayEvent
+  properties:
+    - name: ID
+    - name: Time
+      direction: desc
 - kind: PendingMapperEvent
   properties:
     - name: OldOwner
     - name: NewOwner
+- kind: MapperEvent
+  properties:
+    - name: ID
+    - name: Time
+      direction: desc
 - kind: MappingRecord
   properties:
    - name: MapperID
    - name: ReceivedTime
      direction: desc
+- kind: CoverageHistory
+  properties:
+    - name: Date
+    - name: Location
+- kind: MappingRecord
+  properties:
+    - name: ServiceValidation
+    - name: MapperLocation
+    - name: ReceivedTime
+      direction: desc
+- kind: AccountRewardHistory
+  properties:
+    - name: Account
+    - name: Date
+      direction: desc
+- kind: AssumedGatewayCoverageHistory
+  properties:
+    - name: Date
+    - name: Location

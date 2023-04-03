@@ -7,7 +7,7 @@ require (
 	github.com/ThingsIXFoundation/frequency-plan v1.4.1
 	github.com/ThingsIXFoundation/http-utils v0.0.0-20230206101704-4a5e41dfc150
 	github.com/ThingsIXFoundation/packet-handling v1.0.8
-	github.com/ThingsIXFoundation/types v0.0.0-20230313144757-c043e1e74f74
+	github.com/ThingsIXFoundation/types v0.0.0-20230403181540-e66ccd088c16
 	github.com/ethereum/go-ethereum v1.11.5
 	github.com/spf13/pflag v1.0.5
 	google.golang.org/api v0.114.0
@@ -88,6 +88,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
+	github.com/uber/h3-go/v4 v4.0.1
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 )

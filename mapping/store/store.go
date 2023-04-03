@@ -40,8 +40,10 @@ type Store interface {
 	GetCoverageForGatewayAt(ctx context.Context, gatewayID types.ID, at time.Time) ([]*types.CoverageHistory, error)
 
 	StoreAssumedCoverage(ctx context.Context, assumedCoverage []*types.AssumedCoverageHistory) error
-	GetAssumedCoverageInRegionAt(ctx context.Context, region h3light.Cell, at time.Time) ([]*types.AssumedCoverageHistory, error)
-	GetAssumedCoverageForGatewayAt(ctx context.Context, gatewayID types.ID, at time.Time) ([]*types.AssumedCoverageHistory, error)
+	GetAssumedCoverageLocationsInRegionAtWithRes(ctx context.Context, region h3light.Cell, at time.Time, res int) ([]h3light.Cell, error)
+	GetAssumedCoverageLocationsForGateway(ctx context.Context, gatewayID types.ID, at time.Time) ([]h3light.Cell, error)
+
+	GetMinMaxCoverageDates(ctx context.Context) (time.Time, time.Time, error)
 }
 
 func NewStore() (Store, error) {

@@ -23,7 +23,7 @@ func NewDBAccountRewardHistory(e *types.AccountRewardHistory) *DBAccountRewardHi
 	return &DBAccountRewardHistory{
 		Account:      e.Account.String(),
 		Rewards:      e.Rewards.String(),
-		TotalRewards: e.Rewards.String(),
+		TotalRewards: e.TotalRewards.String(),
 		Processor:    e.Processor.String(),
 		Signature:    e.Signature,
 		Date:         e.Date,

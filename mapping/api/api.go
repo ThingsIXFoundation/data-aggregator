@@ -44,6 +44,15 @@ func (mapi *MappingAPI) Bind(root *chi.Mux) error {
 		})
 	})
 
+	root.Route("/coverage", func(r chi.Router) {
+		r.Route("/v1", func(r chi.Router) {
+			r.Get("/minmaxdate", mapi.MinMaxCoverageDates)
+			r.Get("/map/{date:^[0-9]{4}-[0-9]{2}-[0-9]{2}$}/res0/assumed", mapi.AssumedCoverageMapRes0)
+			r.Get("/map/{date:^[0-9]{4}-[0-9]{2}-[0-9]{2}$}/{hex:(?i)[0-9a-f]{15}}/assumed", mapi.AssumedCoverageMap)
+			r.Get("/map/{date:^[0-9]{4}-[0-9]{2}-[0-9]{2}$}/{hex:(?i)[0-9a-f]{15}}/coverage", mapi.CoverageMap)
+		})
+	})
+
 	return nil
 }
 

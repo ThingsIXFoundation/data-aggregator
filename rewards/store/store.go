@@ -38,6 +38,8 @@ type Store interface {
 	StoreAccountRewards(ctx context.Context, accountRewardHistories []*types.AccountRewardHistory) error
 	GetAccountRewardsAt(ctx context.Context, account common.Address, at time.Time) (*types.AccountRewardHistory, error)
 	GetAllAccountRewardsAt(ctx context.Context, at time.Time) ([]*types.AccountRewardHistory, error)
+
+	GetLatestRewardsDate(ctx context.Context) (time.Time, error)
 }
 
 func NewStore() (Store, error) {

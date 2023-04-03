@@ -26,6 +26,7 @@ import (
 	"github.com/ThingsIXFoundation/data-aggregator/mapping/store/clouddatastore/models"
 	h3light "github.com/ThingsIXFoundation/h3-light"
 	"github.com/ThingsIXFoundation/types"
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/api/iterator"
@@ -50,14 +51,71 @@ func NewStore(ctx context.Context) (*Store, error) {
 
 //var _ store.Store = &Store{}
 
-// GetAssumedCoverageForGatewayAt implements store.Store
-func (*Store) GetAssumedCoverageForGatewayAt(ctx context.Context, gatewayID types.ID, at time.Time) ([]*types.AssumedCoverageHistory, error) {
-	panic("unimplemented")
+// GetMinMaxCoverageDates implements store.Store
+func (s *Store) GetMinMaxCoverageDates(ctx context.Context) (time.Time, time.Time, error) {
+	var dbCoverageHistory models.DBCoverageHistory
+
+	q := datastore.NewQuery((&models.DBCoverageHistory{}).Entity()).Limit(1).Order("Date")
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbCoverageHistory)
+	if err != nil && err != iterator.Done {
+		return time.Time{}, time.Time{}, err
+	}
+	min := dbCoverageHistory.Date
+
+	q = datastore.NewQuery((&models.DBCoverageHistory{}).Entity()).Limit(1).Order("-Date")
+	it = s.client.Run(ctx, q)
+	_, err = it.Next(&dbCoverageHistory)
+	if err != nil && err != iterator.Done {
+		return time.Time{}, time.Time{}, err
+	}
+	max := dbCoverageHistory.Date
+
+	return min, max, nil
 }
 
-// GetAssumedCoverageInRegionAt implements store.Store
-func (*Store) GetAssumedCoverageInRegionAt(ctx context.Context, region h3light.Cell, at time.Time) ([]*types.AssumedCoverageHistory, error) {
-	panic("unimplemented")
+// GetAssumedCoverageLocationsForGateway implements store.Store
+func (s *Store) GetAssumedCoverageLocationsForGateway(ctx context.Context, gatewayID types.ID, at time.Time) ([]h3light.Cell, error) {
+	locationSet := mapset.NewThreadUnsafeSet[h3light.Cell]()
+	q := datastore.NewQuery((&models.DBAssumedGatewayCoverageHistory{}).Entity()).FilterField("GatewayID", "=", gatewayID.String()).FilterField("Date", "=", at)
+
+	var dbagch models.DBAssumedGatewayCoverageHistory
+
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbagch)
+	for err == nil {
+		locationSet.Add(dbagch.Location.Cell())
+
+		_, err = it.Next(&dbagch)
+	}
+	if err != iterator.Done {
+		return nil, err
+	}
+
+	return locationSet.ToSlice(), nil
+}
+
+// GetAssumedCoverageLocationsInRegionAtWithRes implements store.Store
+func (s *Store) GetAssumedCoverageLocationsInRegionAtWithRes(ctx context.Context, region h3light.Cell, at time.Time, res int) ([]h3light.Cell, error) {
+	locationSet := mapset.NewThreadUnsafeSet[h3light.Cell]()
+
+	q := datastore.NewQuery((&models.DBAssumedGatewayCoverageHistory{}).Entity()).FilterField("Date", "=", at)
+	q = clouddatastore.QueryBeginsWith(q, "Location", string(region.DatabaseCell()))
+
+	var dbagch models.DBAssumedGatewayCoverageHistory
+
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbagch)
+	for err == nil {
+		locationSet.Add(dbagch.Location.Cell().Parent(res))
+
+		_, err = it.Next(&dbagch)
+	}
+	if err != iterator.Done {
+		return nil, err
+	}
+
+	return locationSet.ToSlice(), nil
 }
 
 // GetCoverageForGatewayAt implements store.Store
@@ -65,7 +123,7 @@ func (s *Store) GetCoverageForGatewayAt(ctx context.Context, gatewayID types.ID,
 	q := datastore.NewQuery((&models.DBCoverageHistory{}).Entity()).FilterField("GatewayID", "=", gatewayID.String()).FilterField("Date", "=", at)
 
 	var dbCoverageHistories []*models.DBCoverageHistory
-	_, err := s.client.GetAll(ctx, q, dbCoverageHistories)
+	_, err := s.client.GetAll(ctx, q, &dbCoverageHistories)
 	if err != nil {
 		return nil, err
 	}
@@ -79,18 +137,70 @@ func (s *Store) GetCoverageForGatewayAt(ctx context.Context, gatewayID types.ID,
 }
 
 // GetCoverageInRegionAt implements store.Store
-func (*Store) GetCoverageInRegionAt(ctx context.Context, region h3light.Cell, at time.Time) ([]*types.CoverageHistory, error) {
-	panic("unimplemented")
+func (s *Store) GetCoverageInRegionAt(ctx context.Context, region h3light.Cell, at time.Time) ([]*types.CoverageHistory, error) {
+	q := datastore.NewQuery((&models.DBCoverageHistory{}).Entity()).FilterField("Date", "=", at)
+	q = clouddatastore.QueryBeginsWith(q, "Location", string(region.DatabaseCell()))
+
+	var dbCoverageHistories []*models.DBCoverageHistory
+	_, err := s.client.GetAll(ctx, q, &dbCoverageHistories)
+	if err != nil {
+		return nil, err
+	}
+
+	coverageHistories := make([]*types.CoverageHistory, len(dbCoverageHistories))
+	for i, dbCoverageHistory := range dbCoverageHistories {
+		coverageHistories[i] = dbCoverageHistory.CoverageHistory()
+	}
+
+	return coverageHistories, nil
 }
 
 // StoreAssumedCoverage implements store.Store
-func (*Store) StoreAssumedCoverage(ctx context.Context, assumedCoverage []*types.AssumedCoverageHistory) error {
-	panic("unimplemented")
+func (s *Store) StoreAssumedCoverage(ctx context.Context, assumedCoverageHistories []*types.AssumedCoverageHistory) error {
+	for _, ach := range assumedCoverageHistories {
+		dbach := models.NewDBAssumedCoverageHistory(ach)
+		_, err := s.client.Put(ctx, clouddatastore.GetKey(dbach), dbach)
+		if err != nil {
+			return err
+		}
+
+		for _, gwach := range ach.GatewayCoverage {
+			dbgwach := models.NewDBAssumedGatewayCoverageHistory(ach.Location, ach.Date, gwach)
+			_, err := s.client.Put(ctx, clouddatastore.GetKey(dbgwach), dbgwach)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 // StoreCoverage implements store.Store
-func (*Store) StoreCoverage(ctx context.Context, coverage []*types.CoverageHistory) error {
-	panic("unimplemented")
+func (s *Store) StoreCoverage(ctx context.Context, coverageHistories []*types.CoverageHistory) error {
+	/*
+		dbCoverageHistories := make([]*models.DBCoverageHistory, len(coverageHistories))
+		keys := make([]*datastore.Key, len(coverageHistories))
+		for i, coverageHistory := range coverageHistories {
+			dbCoverageHistories[i] = models.NewDBCoverageHistory(coverageHistory)
+			keys[i] = clouddatastore.GetKey(dbCoverageHistories[i])
+		}
+
+		_, err := s.client.PutMulti(ctx, keys, dbCoverageHistories)
+		if err != nil {
+			return err
+		}
+
+		return nil*/
+	for _, ch := range coverageHistories {
+		dbch := models.NewDBCoverageHistory(ch)
+		_, err := s.client.Put(ctx, clouddatastore.GetKey(dbch), dbch)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *Store) StoreMapping(ctx context.Context, mappingRecord *types.MappingRecord) error {
@@ -268,18 +378,22 @@ func (s *Store) GetRecentMappingsInRegion(ctx context.Context, region h3light.Ce
 
 // GetRecentValidMappingsInRegion implements store.Store
 func (s *Store) GetValidMappingsInRegionBetween(ctx context.Context, region h3light.Cell, start time.Time, end time.Time) ([]*types.MappingRecord, error) {
-	var dbMappingRecords []*models.DBMappingRecord
-
-	q := datastore.NewQuery((&models.DBMappingRecord{}).Entity()).FilterField("ReceivedTime", ">=", start).FilterField("ReceivedTime", "<", end).FilterField("ServiceValidation", "=", types.MappingRecordValidationOk).Order("ReceivedTime")
+	q := datastore.NewQuery((&models.DBMappingRecord{}).Entity()).FilterField("ServiceValidation", "=", string(types.MappingRecordValidationOk)).Order("MapperLocation").Order("-ReceivedTime")
 	q = clouddatastore.QueryBeginsWith(q, "MapperLocation", string(region.DatabaseCell()))
-	_, err := s.client.GetAll(ctx, q, &dbMappingRecords)
-	if err != nil {
-		return nil, err
-	}
 
-	mappingRecords := make([]*types.MappingRecord, len(dbMappingRecords))
-	for i, dbRecord := range dbMappingRecords {
-		mappingRecords[i] = dbRecord.MappingRecord()
+	mappingRecords := make([]*types.MappingRecord, 0)
+	var dbMappingRecord models.DBMappingRecord
+
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbMappingRecord)
+	for err == nil {
+		if (dbMappingRecord.ReceivedTime.After(start) || dbMappingRecord.ReceivedTime.Equal(start)) && dbMappingRecord.ReceivedTime.Before(end) {
+			mappingRecords = append(mappingRecords, dbMappingRecord.MappingRecord())
+		}
+		_, err = it.Next(&dbMappingRecord)
+	}
+	if err != iterator.Done {
+		return nil, err
 	}
 
 	return mappingRecords, nil
