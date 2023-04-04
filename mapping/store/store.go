@@ -40,6 +40,7 @@ type Store interface {
 	GetCoverageForGatewayAt(ctx context.Context, gatewayID types.ID, at time.Time) ([]*types.CoverageHistory, error)
 
 	StoreAssumedCoverage(ctx context.Context, assumedCoverage []*types.AssumedCoverageHistory) error
+	GetAllAssumedCoverageLocationsAtWithRes(ctx context.Context, at time.Time, res int) ([]h3light.Cell, error)
 	GetAssumedCoverageLocationsInRegionAtWithRes(ctx context.Context, region h3light.Cell, at time.Time, res int) ([]h3light.Cell, error)
 	GetAssumedCoverageLocationsForGateway(ctx context.Context, gatewayID types.ID, at time.Time) ([]h3light.Cell, error)
 

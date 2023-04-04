@@ -30,17 +30,11 @@ func (mapi *MappingAPI) AssumedCoverageMapRes0(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	var coverageLocations []h3light.Cell
-
-	for _, res0 := range h3light.GetRes0Cells() {
-		newLocations, err := mapi.store.GetAssumedCoverageLocationsInRegionAtWithRes(ctx, res0, at, 6)
-		if err != nil {
-			log.WithError(err).Error("error while getting coverage locations")
-			http.Error(w, "internal error", http.StatusInternalServerError)
-			return
-		}
-
-		coverageLocations = append(coverageLocations, newLocations...)
+	coverageLocations, err := mapi.store.GetAllAssumedCoverageLocationsAtWithRes(ctx, at, 6)
+	if err != nil {
+		log.WithError(err).Error("error while getting coverage locations")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
 	}
 
 	ret := &AssumedCoverageHexContainer{Hexes: coverageLocations}

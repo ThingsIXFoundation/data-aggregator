@@ -95,6 +95,28 @@ func (s *Store) GetAssumedCoverageLocationsForGateway(ctx context.Context, gatew
 	return locationSet.ToSlice(), nil
 }
 
+// GetAllAssumedCoverageLocationsAtWithRes implements store.Store
+func (s *Store) GetAllAssumedCoverageLocationsAtWithRes(ctx context.Context, at time.Time, res int) ([]h3light.Cell, error) {
+	locationSet := mapset.NewThreadUnsafeSet[h3light.Cell]()
+
+	q := datastore.NewQuery((&models.DBAssumedGatewayCoverageHistory{}).Entity()).FilterField("Date", "=", at)
+
+	var dbagch models.DBAssumedGatewayCoverageHistory
+
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbagch)
+	for err == nil {
+		locationSet.Add(dbagch.Location.Cell().Parent(res))
+
+		_, err = it.Next(&dbagch)
+	}
+	if err != iterator.Done {
+		return nil, err
+	}
+
+	return locationSet.ToSlice(), nil
+}
+
 // GetAssumedCoverageLocationsInRegionAtWithRes implements store.Store
 func (s *Store) GetAssumedCoverageLocationsInRegionAtWithRes(ctx context.Context, region h3light.Cell, at time.Time, res int) ([]h3light.Cell, error) {
 	locationSet := mapset.NewThreadUnsafeSet[h3light.Cell]()
