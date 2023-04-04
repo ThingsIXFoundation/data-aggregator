@@ -412,6 +412,7 @@ func (s *Store) GetValidMappingsInRegionBetween(ctx context.Context, region h3li
 		if (dbMappingRecord.ReceivedTime.After(start) || dbMappingRecord.ReceivedTime.Equal(start)) && dbMappingRecord.ReceivedTime.Before(end) {
 			mappingRecords = append(mappingRecords, dbMappingRecord.MappingRecord())
 		}
+		dbMappingRecord = models.DBMappingRecord{}
 		_, err = it.Next(&dbMappingRecord)
 	}
 	if err != iterator.Done {

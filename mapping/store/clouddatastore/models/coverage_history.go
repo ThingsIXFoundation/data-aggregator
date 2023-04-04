@@ -47,7 +47,7 @@ type DBCoverageHistory struct {
 	MappingID string
 
 	// The RSSI (signal strength) of coverage at this location
-	RSSI int `json:"rssi"`
+	RSSI int
 }
 
 func (e *DBCoverageHistory) Entity() string {
