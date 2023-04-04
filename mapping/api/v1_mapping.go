@@ -22,10 +22,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
 	"github.com/ThingsIXFoundation/types"
+	"github.com/spf13/viper"
 )
 
 func replyMappingsCursor(mappings []*types.MappingRecord, cursor string, pageSize int, w http.ResponseWriter, r *http.Request) {
@@ -80,8 +82,11 @@ func (mapi *MappingAPI) GetRecentMappingsForMapper(w http.ResponseWriter, r *htt
 		pageSize = 15
 	}
 
-	start := time.Now().Add(-1 * time.Hour)
-	end := start.Add(since)
+	start := time.Now().Add(-1 * since)
+	end := time.Now().Add(-1 * time.Hour)
+	if viper.GetBool(config.CONFIG_MAPPING_API_SHOW_RECENT_MAPPINGS) {
+		end = time.Now()
+	}
 
 	recentMappingRecords, cursor, err := mapi.store.GetMappingsForMapperInPeriod(ctx, mapperID, start, end, pageSize, cursor)
 	if err != nil {
