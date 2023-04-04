@@ -76,7 +76,7 @@ func (e *DBCoverageHistory) CoverageHistory() *types.CoverageHistory {
 		Location:        e.Location.Cell(),
 		Date:            e.Date,
 		GatewayID:       types.IDFromString(e.GatewayID),
-		GatewayLocation: e.Location.Cell(),
+		GatewayLocation: e.GatewayLocation.Cell(),
 		FrequencyPlan:   e.FrequencyPlan,
 		MapperID:        types.IDFromString(e.MapperID),
 		MappingID:       types.IDFromString(e.MappingID),
