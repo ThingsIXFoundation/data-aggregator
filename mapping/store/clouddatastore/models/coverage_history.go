@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	h3light "github.com/ThingsIXFoundation/h3-light"
 	"github.com/ThingsIXFoundation/types"
 )
@@ -32,6 +33,12 @@ type DBCoverageHistory struct {
 	Date time.Time
 	// ID of the gateway that provides this coverage
 	GatewayID string
+
+	// ID of the gateway that provides this coverage
+	GatewayLocation h3light.DatabaseCell
+
+	// FrequencyPlan
+	FrequencyPlan frequency_plan.BandName
 
 	// ID of the mapper that mapped this coverage
 	MapperID string
@@ -53,22 +60,26 @@ func (e *DBCoverageHistory) Key() string {
 
 func NewDBCoverageHistory(m *types.CoverageHistory) *DBCoverageHistory {
 	return &DBCoverageHistory{
-		Location:  m.Location.DatabaseCell(),
-		Date:      m.Date,
-		GatewayID: m.GatewayID.String(),
-		MapperID:  m.MapperID.String(),
-		MappingID: m.MappingID.String(),
-		RSSI:      m.RSSI,
+		Location:        m.Location.DatabaseCell(),
+		Date:            m.Date,
+		GatewayID:       m.GatewayID.String(),
+		GatewayLocation: m.GatewayLocation.DatabaseCell(),
+		FrequencyPlan:   m.FrequencyPlan,
+		MapperID:        m.MapperID.String(),
+		MappingID:       m.MappingID.String(),
+		RSSI:            m.RSSI,
 	}
 }
 
 func (e *DBCoverageHistory) CoverageHistory() *types.CoverageHistory {
 	return &types.CoverageHistory{
-		Location:  e.Location.Cell(),
-		Date:      e.Date,
-		GatewayID: types.IDFromString(e.GatewayID),
-		MapperID:  types.IDFromString(e.MapperID),
-		MappingID: types.IDFromString(e.MappingID),
-		RSSI:      e.RSSI,
+		Location:        e.Location.Cell(),
+		Date:            e.Date,
+		GatewayID:       types.IDFromString(e.GatewayID),
+		GatewayLocation: e.Location.Cell(),
+		FrequencyPlan:   e.FrequencyPlan,
+		MapperID:        types.IDFromString(e.MapperID),
+		MappingID:       types.IDFromString(e.MappingID),
+		RSSI:            e.RSSI,
 	}
 }
