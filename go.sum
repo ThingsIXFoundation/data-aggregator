@@ -59,11 +59,10 @@ github.com/Kl1mn/h3-go v0.0.4/go.mod h1:z7OGXqLd+5hur6EB8s3wFftUEzmfdZ0CMrExBxme
 github.com/NickBall/go-aes-key-wrap v0.0.0-20170929221519-1c3aa3e4dfc5/go.mod h1:w5D10RxC0NmPYxmQ438CC1S07zaC1zpvuNW7s5sUk2Q=
 github.com/ThingsIXFoundation/frequency-plan v1.4.1 h1:mlfBZgjUVH+c/mX7K2jrpW9GgpuLCRWsR9CcmGYRoO8=
 github.com/ThingsIXFoundation/frequency-plan v1.4.1/go.mod h1:3dsy1m1xHkUt1skc3o8Q3lzhjCXTwsDin83wyN2HmB4=
-github.com/ThingsIXFoundation/frequency-plan/go v0.0.0-20221031153149-5c3c9946d37f h1:kGy+tDtpo089fY5oiEaJksCsDy3psJoK70ZZaSrFllY=
 github.com/ThingsIXFoundation/gateway-registry-go v1.0.0 h1:cRUoWP8d8HuE00frR1lSZPHlMaW44Kr/lavavzHkEOg=
 github.com/ThingsIXFoundation/gateway-registry-go v1.0.0/go.mod h1:/d0dfBbjyrZL1DU+Ct4ORT/dFBT7b+N9cH97r3M+wxo=
-github.com/ThingsIXFoundation/h3-light v0.0.0-20230213101106-d999cec4e0cb h1:xxXomZX5OITPfCP8oIE5ZfG1tIs29fx2SnYlw62tnw8=
-github.com/ThingsIXFoundation/h3-light v0.0.0-20230213101106-d999cec4e0cb/go.mod h1:p3V5tlZH2oU4mShm6RufV5C+dPm4IvpryDAxq6U8bbU=
+github.com/ThingsIXFoundation/h3-light v0.0.0-20230404055559-b4bb7d4d9c47 h1:mMDINoE7UCVk3fxy5m0X62T+f4BLTkGVnw1H2Llcv4k=
+github.com/ThingsIXFoundation/h3-light v0.0.0-20230404055559-b4bb7d4d9c47/go.mod h1:p3V5tlZH2oU4mShm6RufV5C+dPm4IvpryDAxq6U8bbU=
 github.com/ThingsIXFoundation/http-utils v0.0.0-20230206101704-4a5e41dfc150 h1:4kCGQmh2EvMm3R6fOOJbe3qb1S6Ht7kfXL1aAFzpCKw=
 github.com/ThingsIXFoundation/http-utils v0.0.0-20230206101704-4a5e41dfc150/go.mod h1:VLKCXXcBTLjoxBsO1ijeV8OB4SFyn4jT6ixMM1XrcJs=
 github.com/ThingsIXFoundation/mapper-registry-go v0.0.0-20230207125540-21fbd2a4f29d h1:mNuZhYXda/86H5NgonxKEnx6mbDqSzZN28gbGKEi55E=
@@ -72,10 +71,6 @@ github.com/ThingsIXFoundation/packet-handling v1.0.8 h1:EDlTM7upWOYQPlSLUT9D9KZ2
 github.com/ThingsIXFoundation/packet-handling v1.0.8/go.mod h1:wnbSfa54q/4nki2DJv9c1MMvjLwLVOamHb2IKjGZRS0=
 github.com/ThingsIXFoundation/router-registry-go v1.1.0 h1:zWZMhrc4ZuLVR5X2hsu1TVSpkQJo4xM/+oWMrW7bUK0=
 github.com/ThingsIXFoundation/router-registry-go v1.1.0/go.mod h1:JA8B+SBQEL1MAvHrbNw053bSzq++BBwW7QJ/s7BH018=
-github.com/ThingsIXFoundation/types v0.0.0-20230313144757-c043e1e74f74 h1:KnWwXI7L0wn7Za3Ihr8cOhuANq7MAmxrI0qRA5LaNfc=
-github.com/ThingsIXFoundation/types v0.0.0-20230313144757-c043e1e74f74/go.mod h1:ANUUB8Cnm1sCb5ifS5RUjzTgT9u4BCams2tEJ0M5uqk=
-github.com/ThingsIXFoundation/types v0.0.0-20230403151914-ae47db74a4b3 h1:07OXOvcETeA8Zl8E+ZIkK7zGYps7Xgn6Qru74PlKJ8E=
-github.com/ThingsIXFoundation/types v0.0.0-20230403151914-ae47db74a4b3/go.mod h1:ANUUB8Cnm1sCb5ifS5RUjzTgT9u4BCams2tEJ0M5uqk=
 github.com/ThingsIXFoundation/types v0.0.0-20230403181540-e66ccd088c16 h1:v95qvL2jdZqlOjkiTGKvlXdOMiriC/FqRqgvUySlfyI=
 github.com/ThingsIXFoundation/types v0.0.0-20230403181540-e66ccd088c16/go.mod h1:ANUUB8Cnm1sCb5ifS5RUjzTgT9u4BCams2tEJ0M5uqk=
 github.com/VictoriaMetrics/fastcache v1.6.0 h1:C/3Oi3EiBCqufydp1neRZkqcwmEiuRT9c3fqvvgKm5o=
@@ -376,7 +371,6 @@ github.com/tklauser/numcpus v0.6.0 h1:kebhY2Qt+3U6RNK7UqpYNA+tJ23IBEGKkB7JQBfDYm
 github.com/tklauser/numcpus v0.6.0/go.mod h1:FEZLMke0lhOUG6w2JadTzp0a+Nl8PF/GFkQ5UVIcaL4=
 github.com/tyler-smith/go-bip39 v1.1.0 h1:5eUemwrMargf3BSLRRCalXT93Ns6pQJIjYQN2nyfOP8=
 github.com/uber/h3-go/v4 v4.0.1 h1:eOcQXs+eC9Vmil0ZWicPYwSVfgwkPlMyk6Udm/kdv8w=
-github.com/uber/h3-go/v4 v4.0.1/go.mod h1:VDpXVn4NLetBoISLEbiTVNstwW00bhHolV8I+jx9G+4=
 github.com/urfave/cli/v2 v2.17.2-0.20221006022127-8f469abc00aa h1:5SqCsI/2Qya2bCzK15ozrqo2sZxkh0FHynJZOTVoV6Q=
 github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 h1:bAn7/zixMGCfxrRTfdpNzjtPYqr8smhKouy9mxVdGPU=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

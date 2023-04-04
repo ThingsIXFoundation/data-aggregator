@@ -9,7 +9,6 @@ import (
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
 	"github.com/go-chi/chi/v5"
-	"github.com/uber/h3-go/v4"
 )
 
 const MAP_ASSUMED_COVERAGE_MAX_RES = 8
@@ -33,8 +32,8 @@ func (mapi *MappingAPI) AssumedCoverageMapRes0(w http.ResponseWriter, r *http.Re
 
 	var coverageLocations []h3light.Cell
 
-	for _, res0 := range h3.Res0Cells() {
-		newLocations, err := mapi.store.GetAssumedCoverageLocationsInRegionAtWithRes(ctx, h3light.Cell(res0), at, 6)
+	for _, res0 := range h3light.GetRes0Cells() {
+		newLocations, err := mapi.store.GetAssumedCoverageLocationsInRegionAtWithRes(ctx, res0, at, 6)
 		if err != nil {
 			log.WithError(err).Error("error while getting coverage locations")
 			http.Error(w, "internal error", http.StatusInternalServerError)

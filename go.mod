@@ -8,6 +8,7 @@ require (
 	github.com/ThingsIXFoundation/http-utils v0.0.0-20230206101704-4a5e41dfc150
 	github.com/ThingsIXFoundation/packet-handling v1.0.8
 	github.com/ThingsIXFoundation/types v0.0.0-20230403181540-e66ccd088c16
+	github.com/deckarep/golang-set/v2 v2.3.0
 	github.com/ethereum/go-ethereum v1.11.5
 	github.com/spf13/pflag v1.0.5
 	google.golang.org/api v0.114.0
@@ -24,7 +25,6 @@ require (
 	github.com/brocaar/lorawan v0.0.0-20230210103351-84b137ed1908 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/deckarep/golang-set/v2 v2.3.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -77,7 +77,7 @@ require (
 require (
 	cloud.google.com/go/datastore v1.10.0
 	github.com/ThingsIXFoundation/gateway-registry-go v1.0.0
-	github.com/ThingsIXFoundation/h3-light v0.0.0-20230213101106-d999cec4e0cb
+	github.com/ThingsIXFoundation/h3-light v0.0.0-20230404055559-b4bb7d4d9c47
 	github.com/ThingsIXFoundation/mapper-registry-go v0.0.0-20230207125540-21fbd2a4f29d
 	github.com/ThingsIXFoundation/router-registry-go v1.1.0
 	github.com/go-chi/chi/v5 v5.0.8
@@ -88,7 +88,6 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
-	github.com/uber/h3-go/v4 v4.0.1
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 )
