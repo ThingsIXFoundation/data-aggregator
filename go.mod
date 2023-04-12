@@ -7,7 +7,7 @@ require (
 	github.com/ThingsIXFoundation/frequency-plan v1.4.1
 	github.com/ThingsIXFoundation/http-utils v0.0.0-20230206101704-4a5e41dfc150
 	github.com/ThingsIXFoundation/packet-handling v1.0.8
-	github.com/ThingsIXFoundation/types v0.0.0-20230403181540-e66ccd088c16
+	github.com/ThingsIXFoundation/types v0.0.0-20230412110447-7c624be496c5
 	github.com/deckarep/golang-set/v2 v2.3.0
 	github.com/ethereum/go-ethereum v1.11.5
 	github.com/spf13/pflag v1.0.5
@@ -60,10 +60,10 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
-	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230322174352-cde4c949918d // indirect
@@ -88,6 +88,6 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
-	golang.org/x/crypto v0.7.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/crypto v0.8.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
 )
