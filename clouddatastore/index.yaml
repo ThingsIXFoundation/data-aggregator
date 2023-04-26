@@ -69,6 +69,16 @@ indexes:
     - name: Account
     - name: Date
       direction: desc
+- kind: MapperRewardHistory
+  properties:
+    - name: MapperID
+    - name: Date
+      direction: desc
+- kind: GatewayRewardHistory
+  properties:
+    - name: GatewayID
+    - name: Date
+      direction: desc
 - kind: AssumedGatewayCoverageHistory
   properties:
     - name: Date
