@@ -57,7 +57,7 @@ func (s *Store) GetAccountRewardsAt(ctx context.Context, account common.Address,
 
 // GetLatestSignedAccountReward implements store.Store
 func (s *Store) GetLatestSignedAccountReward(ctx context.Context, account common.Address) (*types.AccountRewardHistory, error) {
-	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).FilterField("Account", "=", account.String()).FilterField("Signature", "!=").Order("-Date")
+	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).FilterField("Account", "=", account.String()).FilterField("Signature", "!=", "").Order("-Date")
 
 	ret := models.DBAccountRewardHistory{}
 
