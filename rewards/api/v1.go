@@ -25,7 +25,6 @@ import (
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
 	"github.com/ThingsIXFoundation/types"
-	"github.com/apex/log"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
@@ -146,6 +145,9 @@ func (rapi *RewardsAPI) LatestCheque(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
 		account     = common.HexToAddress(chi.URLParam(r, "account"))
+		log         = logging.WithContext(r.Context()).WithFields(logrus.Fields{
+			"account": account,
+		})
 	)
 	defer cancel()
 
