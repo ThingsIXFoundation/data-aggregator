@@ -24,7 +24,6 @@ import (
 	"github.com/ThingsIXFoundation/data-aggregator/clouddatastore"
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/rewards/store/clouddatastore/models"
-	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/viper"
@@ -177,7 +176,7 @@ func (s *Store) GetLatestRewardsDate(ctx context.Context) (time.Time, error) {
 
 func (s *Store) GetAccountRewards(ctx context.Context, account common.Address, limit int, cursor string) ([]*types.AccountRewardHistory, string, error) {
 	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).
-		FilterField("Account", "=", utils.AddressToString(account)).
+		FilterField("Account", "=", account.String()).
 		Limit(limit + 1).Order("-Date")
 
 	if cursor != "" {
