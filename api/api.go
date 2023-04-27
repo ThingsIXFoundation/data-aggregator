@@ -26,6 +26,7 @@ import (
 	gatewayapi "github.com/ThingsIXFoundation/data-aggregator/gateway/api"
 	mapperapi "github.com/ThingsIXFoundation/data-aggregator/mapper/api"
 	mappingapi "github.com/ThingsIXFoundation/data-aggregator/mapping/api"
+	rewardapi "github.com/ThingsIXFoundation/data-aggregator/rewards/api"
 	routerapi "github.com/ThingsIXFoundation/data-aggregator/router/api"
 	httputils "github.com/ThingsIXFoundation/http-utils"
 	"github.com/ThingsIXFoundation/http-utils/cache"
@@ -40,6 +41,7 @@ type API struct {
 	routerAPI  *routerapi.RouterAPI
 	mapperAPI  *mapperapi.MapperAPI
 	mappingAPI *mappingapi.MappingAPI
+	rewardAPI  *rewardapi.RewardsAPI
 }
 
 func NewAPI() (*API, error) {
@@ -79,7 +81,15 @@ func NewAPI() (*API, error) {
 		}
 
 		api.mappingAPI = mappingAPI
+	}
 
+	if viper.GetBool(config.CONFIG_REWARD_API_ENABLED) {
+		rewardAPI, err := rewardapi.NewRewardsAPI()
+		if err != nil {
+			return nil, err
+		}
+
+		api.rewardAPI = rewardAPI
 	}
 
 	return api, nil
@@ -121,6 +131,10 @@ func (a *API) Serve(ctx context.Context) chan error {
 
 	if a.mappingAPI != nil {
 		a.mappingAPI.Bind(root)
+	}
+
+	if a.rewardAPI != nil {
+		a.rewardAPI.Bind(root)
 	}
 
 	stopped := make(chan error)
