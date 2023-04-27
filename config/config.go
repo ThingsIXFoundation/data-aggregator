@@ -55,7 +55,6 @@ const (
 	CONFIG_GATEWAY_CHAINSYNC_POLL_INTERVAL         = "gateway.chainsync.poll-interval"
 	CONFIG_GATEWAY_STORE                           = "gateway.store.type"
 	CONFIG_GATEWAY_STORE_DEFAULT                   = "clouddatastore"
-	CONFIG_REWARD_API_ENABLED                      = "reward.api.enabled"
 
 	CONFIG_ROUTER_CONTRACT                        = "router.contract"
 	CONFIG_ROUTER_API_ENABLED                     = "router.api.enabled"
@@ -92,6 +91,7 @@ const (
 	CONFIG_MAPPING_STORE                    = "mapping.store.type"
 	CONFIG_MAPPING_STORE_DEFAULT            = "clouddatastore"
 
+	CONFIG_REWARDS_API_ENABLED   = "rewards.api.enabled"
 	CONFIG_REWARDS_STORE         = "rewards.store.type"
 	CONFIG_REWARDS_STORE_DEFAULT = "clouddatastore"
 )
@@ -123,7 +123,6 @@ func PersistentFlags(flags *pflag.FlagSet) {
 	flags.Uint64(CONFIG_GATEWAY_CHAINSYNC_MAX_BLOCK_SCAN_RANGE, 10000, "the number of blocks to scan at most at once")
 	flags.Duration(CONFIG_GATEWAY_CHAINSYNC_POLL_INTERVAL, 1*time.Minute, "the interval to poll the RPC node for new transactions")
 	flags.String(CONFIG_GATEWAY_STORE, CONFIG_GATEWAY_STORE_DEFAULT, "the store to use")
-	flags.Bool(CONFIG_REWARD_API_ENABLED, true, "enable the API for rewards")
 
 	flags.String(CONFIG_ROUTER_CONTRACT, "", "the address of the router registry contract")
 	flags.Bool(CONFIG_ROUTER_API_ENABLED, true, "enable the API for routers")
@@ -158,6 +157,7 @@ func PersistentFlags(flags *pflag.FlagSet) {
 	flags.String(CONFIG_MAPPING_STORE, CONFIG_MAPPING_STORE_DEFAULT, "the store to use")
 
 	flags.String(CONFIG_REWARDS_STORE, CONFIG_REWARDS_STORE_DEFAULT, "the store to use")
+	flags.Bool(CONFIG_REWARDS_API_ENABLED, true, "enable the API for rewards")
 
 }
 

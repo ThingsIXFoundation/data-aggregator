@@ -25,6 +25,7 @@ import (
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
 	"github.com/ThingsIXFoundation/types"
+	"github.com/apex/log"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
@@ -139,4 +140,34 @@ func (rapi *RewardsAPI) LatestMapperRewards(w http.ResponseWriter, r *http.Reque
 			"rewards": mapperRewardsOrEmptySlice(rewards),
 		})
 	}
+}
+
+func (rapi *RewardsAPI) LatestCheque(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
+		account     = common.HexToAddress(chi.URLParam(r, "account"))
+	)
+	defer cancel()
+
+	arh, err := rapi.store.GetLatestSignedAccountReward(ctx, account)
+	if err != nil {
+		log.WithError(err).Error("error when getting latest signed account rewards")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	if arh == nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	rc := &RewardCheque{
+		Beneficiary: arh.Account,
+		Processor:   arh.Processor,
+		TotalAmount: arh.TotalRewards.Bytes(),
+		Signature:   arh.Signature,
+	}
+
+	encoding.ReplyJSON(w, r, http.StatusOK, rc)
+	return
 }

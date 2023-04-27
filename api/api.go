@@ -83,7 +83,7 @@ func NewAPI() (*API, error) {
 		api.mappingAPI = mappingAPI
 	}
 
-	if viper.GetBool(config.CONFIG_REWARD_API_ENABLED) {
+	if viper.GetBool(config.CONFIG_REWARDS_API_ENABLED) {
 		rewardAPI, err := rewardapi.NewRewardsAPI()
 		if err != nil {
 			return nil, err

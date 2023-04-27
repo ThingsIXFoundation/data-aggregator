@@ -40,13 +40,14 @@ func (rapi *RewardsAPI) Bind(root *chi.Mux) error {
 	root.Route("/rewards", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/accounts", func(r chi.Router) {
-				r.Get("/{account:(?i)(0x)?[0-9a-f]{40}}", rapi.LatestAccountRewards)
+				r.Get("/{account:(?i)(0x)?[0-9a-f]{40}}/history", rapi.LatestAccountRewards)
+				r.Get("/{account:(?i)(0x)?[0-9a-f]{40}}/cheque", rapi.LatestCheque)
 			})
 			r.Route("/gateways", func(r chi.Router) {
-				r.Get("/{gatewayID:(?i)(0x)?[0-9a-f]{64}}", rapi.LatestGatewayRewards)
+				r.Get("/{gatewayID:(?i)(0x)?[0-9a-f]{64}}/history", rapi.LatestGatewayRewards)
 			})
 			r.Route("/mappers", func(r chi.Router) {
-				r.Get("/{mapperID:(?i)(0x)?[0-9a-f]{64}}", rapi.LatestMapperRewards)
+				r.Get("/{mapperID:(?i)(0x)?[0-9a-f]{64}}/history", rapi.LatestMapperRewards)
 			})
 		})
 	})

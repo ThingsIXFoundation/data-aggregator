@@ -37,6 +37,7 @@ type Store interface {
 
 	StoreAccountRewards(ctx context.Context, accountRewardHistories []*types.AccountRewardHistory) error
 	GetAccountRewardsAt(ctx context.Context, account common.Address, at time.Time) (*types.AccountRewardHistory, error)
+	GetLatestSignedAccountReward(ctx context.Context, account common.Address) (*types.AccountRewardHistory, error)
 	GetAllAccountRewardsAt(ctx context.Context, at time.Time) ([]*types.AccountRewardHistory, error)
 
 	GetAccountRewards(ctx context.Context, account common.Address, limit int, cursor string) ([]*types.AccountRewardHistory, string, error)
