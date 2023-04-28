@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
 	"github.com/ThingsIXFoundation/types"
@@ -60,7 +61,7 @@ func (rapi *RewardsAPI) LatestAccountRewards(w http.ResponseWriter, r *http.Requ
 	now := end
 	rewardsI := 0
 	for now.Compare(start) >= 0 {
-		if len(rewards) > rewardsI && rewards[rewardsI].Date == now {
+		if len(rewards) > rewardsI && rewards[rewardsI].Date.Equal(now) {
 			filled_rewards = append(filled_rewards, rewards[rewardsI])
 			rewardsI++
 		} else {
@@ -108,7 +109,7 @@ func (rapi *RewardsAPI) LatestGatewayRewards(w http.ResponseWriter, r *http.Requ
 	now := end
 	rewardsI := 0
 	for now.Compare(start) >= 0 {
-		if len(rewards) > rewardsI && rewards[rewardsI].Date == now {
+		if len(rewards) > rewardsI && rewards[rewardsI].Date.Equal(now) {
 			filled_rewards = append(filled_rewards, rewards[rewardsI])
 			rewardsI++
 		} else {
@@ -157,7 +158,7 @@ func (rapi *RewardsAPI) LatestMapperRewards(w http.ResponseWriter, r *http.Reque
 	now := end
 	rewardsI := 0
 	for now.Compare(start) >= 0 {
-		if len(rewards) > rewardsI && rewards[rewardsI].Date == now {
+		if len(rewards) > rewardsI && rewards[rewardsI].Date.Equal(now) {
 			filled_rewards = append(filled_rewards, rewards[rewardsI])
 			rewardsI++
 		} else {
@@ -213,13 +214,13 @@ func (rapi *RewardsAPI) LatestCheque(w http.ResponseWriter, r *http.Request) {
 
 func parseEndStart(endStr, startStr string) (time.Time, time.Time, error) {
 	var err error
-	end := time.Now()
+	end := utils.DateOnly(time.Now())
 	if endStr != "" {
 		end, err = time.Parse(time.DateOnly, endStr)
 		if err != nil {
 			i, ierr := strconv.Atoi(endStr)
 			if ierr == nil {
-				end = time.Now().Add(time.Duration(i) * 24 * time.Hour)
+				end = utils.DateOnly(time.Now()).Add(time.Duration(i) * 24 * time.Hour)
 			} else {
 				return time.Time{}, time.Time{}, fmt.Errorf("invalid end time: %s", endStr)
 			}
