@@ -18,6 +18,7 @@ package api
 
 import (
 	"context"
+	"math/big"
 	"net/http"
 	"strconv"
 	"time"
@@ -55,14 +56,31 @@ func (rapi *RewardsAPI) LatestAccountRewards(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	var filled_rewards []*types.AccountRewardHistory
+	for _, reward := range rewards {
+		if len(filled_rewards) == 0 {
+			filled_rewards = append(filled_rewards, reward)
+			continue
+		}
+		for filled_rewards[len(filled_rewards)-1].Date.Sub(reward.Date) > 24*time.Hour {
+			filled_rewards = append(filled_rewards, &types.AccountRewardHistory{
+				Date:    filled_rewards[len(filled_rewards)-1].Date.Add(-24 * time.Hour),
+				Account: reward.Account,
+				Rewards: big.NewInt(0),
+			})
+		}
+
+		filled_rewards = append(filled_rewards, reward)
+	}
+
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor":  cursor,
-			"rewards": accountRewardsOrEmptySlice(rewards),
+			"rewards": accountRewardsOrEmptySlice(filled_rewards),
 		})
 	} else {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"rewards": accountRewardsOrEmptySlice(rewards),
+			"rewards": accountRewardsOrEmptySlice(filled_rewards),
 		})
 	}
 }
@@ -92,14 +110,32 @@ func (rapi *RewardsAPI) LatestGatewayRewards(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	var filled_rewards []*types.GatewayRewardHistory
+	for _, reward := range rewards {
+		if len(filled_rewards) == 0 {
+			filled_rewards = append(filled_rewards, reward)
+			continue
+		}
+		for filled_rewards[len(filled_rewards)-1].Date.Sub(reward.Date) > 24*time.Hour {
+			filled_rewards = append(filled_rewards, &types.GatewayRewardHistory{
+				Date:                      filled_rewards[len(filled_rewards)-1].Date.Add(-24 * time.Hour),
+				GatewayID:                 reward.GatewayID,
+				AssumedCoverageShareUnits: big.NewInt(0),
+				Rewards:                   big.NewInt(0),
+			})
+		}
+
+		filled_rewards = append(filled_rewards, reward)
+	}
+
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor":  cursor,
-			"rewards": gatewayRewardsOrEmptySlice(rewards),
+			"rewards": gatewayRewardsOrEmptySlice(filled_rewards),
 		})
 	} else {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"rewards": gatewayRewardsOrEmptySlice(rewards),
+			"rewards": gatewayRewardsOrEmptySlice(filled_rewards),
 		})
 	}
 }
@@ -129,14 +165,32 @@ func (rapi *RewardsAPI) LatestMapperRewards(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	var filled_rewards []*types.MapperRewardHistory
+	for _, reward := range rewards {
+		if len(filled_rewards) == 0 {
+			filled_rewards = append(filled_rewards, reward)
+			continue
+		}
+		for filled_rewards[len(filled_rewards)-1].Date.Sub(reward.Date) > 24*time.Hour {
+			filled_rewards = append(filled_rewards, &types.MapperRewardHistory{
+				Date:         filled_rewards[len(filled_rewards)-1].Date.Add(-24 * time.Hour),
+				MapperID:     reward.MapperID,
+				MappingUnits: big.NewInt(0),
+				Rewards:      big.NewInt(0),
+			})
+		}
+
+		filled_rewards = append(filled_rewards, reward)
+	}
+
 	if cursor != "" {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
 			"cursor":  cursor,
-			"rewards": mapperRewardsOrEmptySlice(rewards),
+			"rewards": mapperRewardsOrEmptySlice(filled_rewards),
 		})
 	} else {
 		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"rewards": mapperRewardsOrEmptySlice(rewards),
+			"rewards": mapperRewardsOrEmptySlice(filled_rewards),
 		})
 	}
 }
