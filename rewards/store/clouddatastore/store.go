@@ -225,6 +225,36 @@ func (s *Store) GetAccountRewards(ctx context.Context, account common.Address, l
 	return rewards, cursorObj.String(), nil
 }
 
+func (s *Store) GetAccountRewardsBetween(ctx context.Context, account common.Address, start, end time.Time) ([]*types.AccountRewardHistory, error) {
+	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).
+		FilterField("Account", "=", account.String()).
+		FilterField("Date", ">=", start).FilterField("Date", "<=", end).
+		Order("-Date")
+
+	var (
+		reward  models.DBAccountRewardHistory
+		rewards []*types.AccountRewardHistory
+		it      = s.client.Run(ctx, q)
+	)
+
+	_, err := it.Next(&reward)
+	for err == nil {
+		r, derr := reward.AccountRewardHistory()
+		if derr != nil {
+			return nil, derr
+		}
+		rewards = append(rewards, r)
+
+		_, err = it.Next(&reward)
+	}
+
+	if err != iterator.Done {
+		return nil, err
+	}
+
+	return rewards, nil
+}
+
 func (s *Store) GetMapperRewards(ctx context.Context, mapperID types.ID, limit int, cursor string) ([]*types.MapperRewardHistory, string, error) {
 	q := datastore.NewQuery((&models.DBMapperRewardHistory{}).Entity()).
 		FilterField("MapperID", "=", mapperID.String()).
@@ -277,6 +307,36 @@ func (s *Store) GetMapperRewards(ctx context.Context, mapperID types.ID, limit i
 
 }
 
+func (s *Store) GetMapperRewardsBetween(ctx context.Context, mapperID types.ID, start, end time.Time) ([]*types.MapperRewardHistory, error) {
+	q := datastore.NewQuery((&models.DBMapperRewardHistory{}).Entity()).
+		FilterField("MapperID", "=", mapperID.String()).
+		FilterField("Date", ">=", start).FilterField("Date", "<=", end).
+		Order("-Date")
+
+	var (
+		reward  models.DBMapperRewardHistory
+		rewards []*types.MapperRewardHistory
+		it      = s.client.Run(ctx, q)
+	)
+
+	_, err := it.Next(&reward)
+	for err == nil {
+		r, derr := reward.MapperRewardHistory()
+		if derr != nil {
+			return nil, derr
+		}
+		rewards = append(rewards, r)
+
+		_, err = it.Next(&reward)
+	}
+
+	if err != iterator.Done {
+		return nil, err
+	}
+
+	return rewards, nil
+}
+
 func (s *Store) GetGatewayRewards(ctx context.Context, gatewayID types.ID, limit int, cursor string) ([]*types.GatewayRewardHistory, string, error) {
 	q := datastore.NewQuery((&models.DBGatewayRewardHistory{}).Entity()).
 		FilterField("GatewayID", "=", gatewayID.String()).
@@ -326,4 +386,34 @@ func (s *Store) GetGatewayRewards(ctx context.Context, gatewayID types.ID, limit
 	}
 
 	return rewards, cursorObj.String(), nil
+}
+
+func (s *Store) GetGatewayRewardsBetween(ctx context.Context, gatewayID types.ID, start, end time.Time) ([]*types.GatewayRewardHistory, error) {
+	q := datastore.NewQuery((&models.DBGatewayRewardHistory{}).Entity()).
+		FilterField("GatewayID", "=", gatewayID.String()).
+		FilterField("Date", ">=", start).FilterField("Date", "<=", end).
+		Order("-Date")
+
+	var (
+		reward  models.DBGatewayRewardHistory
+		rewards []*types.GatewayRewardHistory
+		it      = s.client.Run(ctx, q)
+	)
+
+	_, err := it.Next(&reward)
+	for err == nil {
+		r, derr := reward.GatewayRewardHistory()
+		if derr != nil {
+			return nil, derr
+		}
+		rewards = append(rewards, r)
+
+		_, err = it.Next(&reward)
+	}
+
+	if err != iterator.Done {
+		return nil, err
+	}
+
+	return rewards, nil
 }

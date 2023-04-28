@@ -41,8 +41,11 @@ type Store interface {
 	GetAllAccountRewardsAt(ctx context.Context, at time.Time) ([]*types.AccountRewardHistory, error)
 
 	GetAccountRewards(ctx context.Context, account common.Address, limit int, cursor string) ([]*types.AccountRewardHistory, string, error)
+	GetAccountRewardsBetween(ctx context.Context, account common.Address, start, end time.Time) ([]*types.AccountRewardHistory, error)
 	GetMapperRewards(ctx context.Context, mapperID types.ID, limit int, cursor string) ([]*types.MapperRewardHistory, string, error)
+	GetMapperRewardsBetween(ctx context.Context, mapperID types.ID, start, end time.Time) ([]*types.MapperRewardHistory, error)
 	GetGatewayRewards(ctx context.Context, gatewayID types.ID, limit int, cursor string) ([]*types.GatewayRewardHistory, string, error)
+	GetGatewayRewardsBetween(ctx context.Context, gatewayID types.ID, start, end time.Time) ([]*types.GatewayRewardHistory, error)
 
 	GetLatestRewardsDate(ctx context.Context) (time.Time, error)
 }

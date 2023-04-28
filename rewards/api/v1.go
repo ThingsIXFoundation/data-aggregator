@@ -18,6 +18,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"net/http"
 	"strconv"
@@ -35,21 +36,20 @@ func (rapi *RewardsAPI) LatestAccountRewards(w http.ResponseWriter, r *http.Requ
 	var (
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
 		account     = common.HexToAddress(chi.URLParam(r, "account"))
-		cursor      = r.URL.Query().Get("cursor")
-		pageSize, _ = strconv.Atoi(r.URL.Query().Get("pageSize"))
-		log         = logging.WithContext(r.Context()).WithFields(logrus.Fields{
-			"account":  account,
-			"pageSize": pageSize,
-		})
+		startStr    = r.URL.Query().Get("start")
+		endStr      = r.URL.Query().Get("end")
+		log         = logging.WithContext(r.Context())
+		err         error
 	)
-
 	defer cancel()
 
-	if pageSize == 0 || pageSize > 100 {
-		pageSize = 15
+	end, start, err := parseEndStart(endStr, startStr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	rewards, cursor, err := rapi.store.GetAccountRewards(ctx, account, pageSize, cursor)
+	rewards, err := rapi.store.GetAccountRewardsBetween(ctx, account, start, end)
 	if err != nil {
 		log.WithError(err).Error("error when getting latest account rewards")
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -57,142 +57,125 @@ func (rapi *RewardsAPI) LatestAccountRewards(w http.ResponseWriter, r *http.Requ
 	}
 
 	var filled_rewards []*types.AccountRewardHistory
-	for _, reward := range rewards {
-		if len(filled_rewards) == 0 {
-			filled_rewards = append(filled_rewards, reward)
-			continue
-		}
-		for filled_rewards[len(filled_rewards)-1].Date.Sub(reward.Date) > 24*time.Hour {
+	now := end
+	rewardsI := 0
+	for now.Compare(start) >= 0 {
+		if len(rewards) > rewardsI && rewards[rewardsI].Date == now {
+			filled_rewards = append(filled_rewards, rewards[rewardsI])
+			rewardsI++
+		} else {
 			filled_rewards = append(filled_rewards, &types.AccountRewardHistory{
-				Date:    filled_rewards[len(filled_rewards)-1].Date.Add(-24 * time.Hour),
-				Account: reward.Account,
+				Account: account,
 				Rewards: big.NewInt(0),
+				Date:    now,
 			})
 		}
 
-		filled_rewards = append(filled_rewards, reward)
+		now = now.Add(-24 * time.Hour)
 	}
 
-	if cursor != "" {
-		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"cursor":  cursor,
-			"rewards": accountRewardsOrEmptySlice(filled_rewards),
-		})
-	} else {
-		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"rewards": accountRewardsOrEmptySlice(filled_rewards),
-		})
-	}
+	encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
+		"rewards": filled_rewards,
+	})
 }
 
 func (rapi *RewardsAPI) LatestGatewayRewards(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
 		gatewayID   = types.IDFromString(chi.URLParam(r, "gatewayID"))
-		cursor      = r.URL.Query().Get("cursor")
-		pageSize, _ = strconv.Atoi(r.URL.Query().Get("pageSize"))
-		log         = logging.WithContext(r.Context()).WithFields(logrus.Fields{
-			"gateway":  gatewayID,
-			"pageSize": pageSize,
-		})
+		startStr    = r.URL.Query().Get("start")
+		endStr      = r.URL.Query().Get("end")
+		log         = logging.WithContext(r.Context())
+		err         error
 	)
 
 	defer cancel()
 
-	if pageSize == 0 || pageSize > 100 {
-		pageSize = 15
+	end, start, err := parseEndStart(endStr, startStr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	rewards, cursor, err := rapi.store.GetGatewayRewards(ctx, gatewayID, pageSize, cursor)
+	rewards, err := rapi.store.GetGatewayRewardsBetween(ctx, gatewayID, start, end)
 	if err != nil {
-		log.WithError(err).Error("error when getting latest gateway rewards")
+		log.WithError(err).Error("error when getting latest account rewards")
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
 	var filled_rewards []*types.GatewayRewardHistory
-	for _, reward := range rewards {
-		if len(filled_rewards) == 0 {
-			filled_rewards = append(filled_rewards, reward)
-			continue
-		}
-		for filled_rewards[len(filled_rewards)-1].Date.Sub(reward.Date) > 24*time.Hour {
+	now := end
+	rewardsI := 0
+	for now.Compare(start) >= 0 {
+		if len(rewards) > rewardsI && rewards[rewardsI].Date == now {
+			filled_rewards = append(filled_rewards, rewards[rewardsI])
+			rewardsI++
+		} else {
 			filled_rewards = append(filled_rewards, &types.GatewayRewardHistory{
-				Date:                      filled_rewards[len(filled_rewards)-1].Date.Add(-24 * time.Hour),
-				GatewayID:                 reward.GatewayID,
-				AssumedCoverageShareUnits: big.NewInt(0),
+				GatewayID:                 gatewayID,
 				Rewards:                   big.NewInt(0),
+				AssumedCoverageShareUnits: big.NewInt(0),
+				Date:                      now,
 			})
 		}
 
-		filled_rewards = append(filled_rewards, reward)
+		now = now.Add(-24 * time.Hour)
 	}
 
-	if cursor != "" {
-		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"cursor":  cursor,
-			"rewards": gatewayRewardsOrEmptySlice(filled_rewards),
-		})
-	} else {
-		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"rewards": gatewayRewardsOrEmptySlice(filled_rewards),
-		})
-	}
+	encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
+		"rewards": filled_rewards,
+	})
 }
 
 func (rapi *RewardsAPI) LatestMapperRewards(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
 		mapperID    = types.IDFromString(chi.URLParam(r, "mapperID"))
-		cursor      = r.URL.Query().Get("cursor")
-		pageSize, _ = strconv.Atoi(r.URL.Query().Get("pageSize"))
-		log         = logging.WithContext(r.Context()).WithFields(logrus.Fields{
-			"mapper":   mapperID,
-			"pageSize": pageSize,
-		})
+		startStr    = r.URL.Query().Get("start")
+		endStr      = r.URL.Query().Get("end")
+		log         = logging.WithContext(r.Context())
+		err         error
 	)
 
 	defer cancel()
 
-	if pageSize == 0 || pageSize > 100 {
-		pageSize = 15
+	end, start, err := parseEndStart(endStr, startStr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	rewards, cursor, err := rapi.store.GetMapperRewards(ctx, mapperID, pageSize, cursor)
+	rewards, err := rapi.store.GetMapperRewardsBetween(ctx, mapperID, start, end)
 	if err != nil {
-		log.WithError(err).Error("error when getting latest mapper rewards")
+		log.WithError(err).Error("error when getting latest account rewards")
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
 	var filled_rewards []*types.MapperRewardHistory
-	for _, reward := range rewards {
-		if len(filled_rewards) == 0 {
-			filled_rewards = append(filled_rewards, reward)
-			continue
-		}
-		for filled_rewards[len(filled_rewards)-1].Date.Sub(reward.Date) > 24*time.Hour {
+	now := end
+	rewardsI := 0
+	for now.Compare(start) >= 0 {
+		if len(rewards) > rewardsI && rewards[rewardsI].Date == now {
+			filled_rewards = append(filled_rewards, rewards[rewardsI])
+			rewardsI++
+		} else {
+
 			filled_rewards = append(filled_rewards, &types.MapperRewardHistory{
-				Date:         filled_rewards[len(filled_rewards)-1].Date.Add(-24 * time.Hour),
-				MapperID:     reward.MapperID,
-				MappingUnits: big.NewInt(0),
+				MapperID:     mapperID,
 				Rewards:      big.NewInt(0),
+				MappingUnits: big.NewInt(0),
+				Date:         now,
 			})
 		}
 
-		filled_rewards = append(filled_rewards, reward)
+		now = now.Add(-24 * time.Hour)
 	}
 
-	if cursor != "" {
-		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"cursor":  cursor,
-			"rewards": mapperRewardsOrEmptySlice(filled_rewards),
-		})
-	} else {
-		encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
-			"rewards": mapperRewardsOrEmptySlice(filled_rewards),
-		})
-	}
+	encoding.ReplyJSON(w, r, http.StatusOK, map[string]interface{}{
+		"rewards": filled_rewards,
+	})
 }
 
 func (rapi *RewardsAPI) LatestCheque(w http.ResponseWriter, r *http.Request) {
@@ -226,4 +209,39 @@ func (rapi *RewardsAPI) LatestCheque(w http.ResponseWriter, r *http.Request) {
 
 	encoding.ReplyJSON(w, r, http.StatusOK, rc)
 	return
+}
+
+func parseEndStart(endStr, startStr string) (time.Time, time.Time, error) {
+	var err error
+	end := time.Now()
+	if endStr != "" {
+		end, err = time.Parse(time.DateOnly, endStr)
+		if err != nil {
+			i, ierr := strconv.Atoi(endStr)
+			if ierr == nil {
+				end = time.Now().Add(time.Duration(i) * 24 * time.Hour)
+			} else {
+				return time.Time{}, time.Time{}, fmt.Errorf("invalid end time: %s", endStr)
+			}
+		}
+	}
+
+	start := end.Add(-30 * 24 * time.Hour)
+	if startStr != "" {
+		start, err = time.Parse(time.DateOnly, startStr)
+		if err != nil {
+			i, ierr := strconv.Atoi(startStr)
+			if ierr == nil {
+				start = end.Add(time.Duration(i) * 24 * time.Hour)
+			} else {
+				return time.Time{}, time.Time{}, fmt.Errorf("invalid end time: %s", startStr)
+			}
+		}
+	}
+
+	if start.After(end) {
+		return time.Time{}, time.Time{}, fmt.Errorf("start time is after end time")
+	}
+
+	return end, start, nil
 }
