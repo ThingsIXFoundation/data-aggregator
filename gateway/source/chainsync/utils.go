@@ -58,6 +58,16 @@ func decodeLogToGatewayEvent(ctx context.Context, log *etypes.Log, client *ethcl
 	case GatewayOffboardedEvent:
 		event.Type = types.GatewayOffboardedEvent
 		event.ID = types.ID(log.Topics[1])
+		gatewayBefore, err := gatewayDetails(gatewayRegistry, contractAddress, log.BlockNumber-1, event.ID)
+		if err != nil {
+			logrus.WithError(err).Error("error while getting before-offboard gateway details")
+			return nil, err
+		}
+		event.OldOwner = utils.Ptr(gatewayBefore.Owner)
+		event.OldFrequencyPlan = gatewayBefore.FrequencyPlan
+		event.OldAltitude = gatewayBefore.Altitude
+		event.OldLocation = gatewayBefore.Location
+		event.OldAntennaGain = gatewayBefore.AntennaGain
 
 	case GatewayUpdatedEvent:
 		event.Type = types.GatewayUpdatedEvent

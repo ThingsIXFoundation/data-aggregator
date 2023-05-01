@@ -7,7 +7,7 @@ require (
 	github.com/ThingsIXFoundation/frequency-plan v1.4.1
 	github.com/ThingsIXFoundation/http-utils v0.0.0-20230206101704-4a5e41dfc150
 	github.com/ThingsIXFoundation/packet-handling v1.0.8
-	github.com/ThingsIXFoundation/types v0.0.0-20230412110447-7c624be496c5
+	github.com/ThingsIXFoundation/types v0.0.0-20230501154650-73bef557e22e
 	github.com/deckarep/golang-set/v2 v2.3.0
 	github.com/ethereum/go-ethereum v1.11.5
 	github.com/spf13/pflag v1.0.5
