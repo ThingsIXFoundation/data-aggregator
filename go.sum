@@ -78,6 +78,8 @@ github.com/ThingsIXFoundation/types v0.0.0-20230412110447-7c624be496c5 h1:YFEUFp
 github.com/ThingsIXFoundation/types v0.0.0-20230412110447-7c624be496c5/go.mod h1:ANUUB8Cnm1sCb5ifS5RUjzTgT9u4BCams2tEJ0M5uqk=
 github.com/ThingsIXFoundation/types v0.0.0-20230501154650-73bef557e22e h1:XByrgpOZGMsYT/4BXUK+7eSjLjWxHpZWSgN5CKwlIss=
 github.com/ThingsIXFoundation/types v0.0.0-20230501154650-73bef557e22e/go.mod h1:ANUUB8Cnm1sCb5ifS5RUjzTgT9u4BCams2tEJ0M5uqk=
+github.com/ThingsIXFoundation/types v0.0.0-20230501192800-f057437d7103 h1:irZSgh98C9ssVbvapQ5w+l58O7OpT+ZCPgC47Wf+u9Y=
+github.com/ThingsIXFoundation/types v0.0.0-20230501192800-f057437d7103/go.mod h1:ANUUB8Cnm1sCb5ifS5RUjzTgT9u4BCams2tEJ0M5uqk=
 github.com/VictoriaMetrics/fastcache v1.6.0 h1:C/3Oi3EiBCqufydp1neRZkqcwmEiuRT9c3fqvvgKm5o=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
