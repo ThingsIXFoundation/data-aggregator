@@ -18,7 +18,6 @@ package api
 
 import (
 	"github.com/ThingsIXFoundation/data-aggregator/rewards/store"
-	"github.com/ThingsIXFoundation/types"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -40,44 +39,18 @@ func (rapi *RewardsAPI) Bind(root *chi.Mux) error {
 	root.Route("/rewards", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/accounts", func(r chi.Router) {
-				r.Get("/{account:(?i)(0x)?[0-9a-f]{40}}/history", rapi.LatestAccountRewards)
+				r.Get("/{account:(?i)(0x)?[0-9a-f]{40}}/history", rapi.AccountRewardsHistory)
 				r.Get("/{account:(?i)(0x)?[0-9a-f]{40}}/cheque", rapi.LatestCheque)
+				r.Get("/{account:(?i)(0x)?[0-9a-f]{40}}/latest", rapi.LatestAccountRewards)
 			})
 			r.Route("/gateways", func(r chi.Router) {
-				r.Get("/{gatewayID:(?i)(0x)?[0-9a-f]{64}}/history", rapi.LatestGatewayRewards)
+				r.Get("/{gatewayID:(?i)(0x)?[0-9a-f]{64}}/history", rapi.GatewayRewardsHistory)
 			})
 			r.Route("/mappers", func(r chi.Router) {
-				r.Get("/{mapperID:(?i)(0x)?[0-9a-f]{64}}/history", rapi.LatestMapperRewards)
+				r.Get("/{mapperID:(?i)(0x)?[0-9a-f]{64}}/history", rapi.MapperRewardsHistory)
 			})
 		})
 	})
 
 	return nil
-}
-
-var (
-	emptyAccountRewards = make([]*types.AccountRewardHistory, 0)
-	emptyGatewayRewards = make([]*types.GatewayRewardHistory, 0)
-	emptyMapperRewards  = make([]*types.MapperRewardHistory, 0)
-)
-
-func accountRewardsOrEmptySlice(rewards []*types.AccountRewardHistory) []*types.AccountRewardHistory {
-	if len(rewards) == 0 {
-		return emptyAccountRewards
-	}
-	return rewards
-}
-
-func gatewayRewardsOrEmptySlice(rewards []*types.GatewayRewardHistory) []*types.GatewayRewardHistory {
-	if len(rewards) == 0 {
-		return emptyGatewayRewards
-	}
-	return rewards
-}
-
-func mapperRewardsOrEmptySlice(rewards []*types.MapperRewardHistory) []*types.MapperRewardHistory {
-	if len(rewards) == 0 {
-		return emptyMapperRewards
-	}
-	return rewards
 }

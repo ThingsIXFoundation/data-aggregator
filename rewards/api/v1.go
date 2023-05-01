@@ -33,7 +33,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (rapi *RewardsAPI) LatestAccountRewards(w http.ResponseWriter, r *http.Request) {
+func (rapi *RewardsAPI) AccountRewardsHistory(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
 		account     = common.HexToAddress(chi.URLParam(r, "account"))
@@ -80,7 +80,7 @@ func (rapi *RewardsAPI) LatestAccountRewards(w http.ResponseWriter, r *http.Requ
 	})
 }
 
-func (rapi *RewardsAPI) LatestGatewayRewards(w http.ResponseWriter, r *http.Request) {
+func (rapi *RewardsAPI) GatewayRewardsHistory(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
 		gatewayID   = types.IDFromString(chi.URLParam(r, "gatewayID"))
@@ -129,7 +129,7 @@ func (rapi *RewardsAPI) LatestGatewayRewards(w http.ResponseWriter, r *http.Requ
 	})
 }
 
-func (rapi *RewardsAPI) LatestMapperRewards(w http.ResponseWriter, r *http.Request) {
+func (rapi *RewardsAPI) MapperRewardsHistory(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
 		mapperID    = types.IDFromString(chi.URLParam(r, "mapperID"))
@@ -179,6 +179,31 @@ func (rapi *RewardsAPI) LatestMapperRewards(w http.ResponseWriter, r *http.Reque
 	})
 }
 
+func (rapi *RewardsAPI) LatestAccountRewards(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
+		account     = common.HexToAddress(chi.URLParam(r, "account"))
+		log         = logging.WithContext(r.Context()).WithFields(logrus.Fields{
+			"account": account,
+		})
+	)
+	defer cancel()
+
+	arh, err := rapi.store.GetAccountRewardsAt(ctx, account, time.Now())
+	if err != nil {
+		log.WithError(err).Error("error when getting latest signed account rewards")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	if arh == nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	encoding.ReplyJSON(w, r, http.StatusOK, arh)
+}
+
 func (rapi *RewardsAPI) LatestCheque(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
@@ -209,7 +234,6 @@ func (rapi *RewardsAPI) LatestCheque(w http.ResponseWriter, r *http.Request) {
 	}
 
 	encoding.ReplyJSON(w, r, http.StatusOK, rc)
-	return
 }
 
 func parseEndStart(endStr, startStr string) (time.Time, time.Time, error) {

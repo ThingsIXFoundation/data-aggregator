@@ -9,7 +9,7 @@ require (
 	github.com/ThingsIXFoundation/packet-handling v1.0.8
 	github.com/ThingsIXFoundation/types v0.0.0-20230501154650-73bef557e22e
 	github.com/deckarep/golang-set/v2 v2.3.0
-	github.com/ethereum/go-ethereum v1.11.5
+	github.com/ethereum/go-ethereum v1.11.6
 	github.com/spf13/pflag v1.0.5
 	google.golang.org/api v0.114.0
 )
@@ -59,7 +59,7 @@ require (
 	github.com/tklauser/numcpus v0.6.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
+	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53 // indirect
 	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
