@@ -19,6 +19,7 @@ package cacher
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/ThingsIXFoundation/types"
@@ -35,6 +36,10 @@ func NewMapperCacheClient(redis redis.UniversalClient) (*MapperCacheClient, erro
 
 func (gcc *MapperCacheClient) Get(ctx context.Context, mapperID types.ID) (*types.Mapper, error) {
 	gjson, err := gcc.redis.Get(ctx, fmt.Sprintf("Mapper.%s", mapperID.String())).Result()
+	if err != nil && errors.Is(err, redis.Nil) {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}

@@ -19,6 +19,7 @@ package cacher
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/ThingsIXFoundation/types"
@@ -35,6 +36,10 @@ func NewGatewayCacheClient(redis redis.UniversalClient) (*GatewayCacheClient, er
 
 func (gcc *GatewayCacheClient) Get(ctx context.Context, gatewayID types.ID) (*types.Gateway, error) {
 	gjson, err := gcc.redis.Get(ctx, fmt.Sprintf("Gateway.%s", gatewayID.String())).Result()
+	if err != nil && errors.Is(err, redis.Nil) {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}
