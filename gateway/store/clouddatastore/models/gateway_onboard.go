@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
@@ -23,7 +24,7 @@ func (e *DBGatewayOnboard) Entity() string {
 }
 
 func (e *DBGatewayOnboard) Key() string {
-	return e.GatewayID
+	return fmt.Sprintf("%s.%s", e.GatewayID, e.Onboarder)
 }
 
 func (e DBGatewayOnboard) GatewayOnboard() *GatewayOnboard {

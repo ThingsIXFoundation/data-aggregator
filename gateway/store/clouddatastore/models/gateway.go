@@ -17,8 +17,6 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/frequency-plan/go/frequency_plan"
 	h3light "github.com/ThingsIXFoundation/h3-light"
@@ -43,7 +41,7 @@ func (e *DBGateway) Entity() string {
 }
 
 func (e *DBGateway) Key() string {
-	return fmt.Sprintf("%s.%s", e.ID, e.ContractAddress)
+	return e.ID
 }
 
 func NewDBGateway(gw *types.Gateway) *DBGateway {
