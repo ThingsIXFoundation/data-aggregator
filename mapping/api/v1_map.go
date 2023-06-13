@@ -54,7 +54,7 @@ func (mapi *MappingAPI) AssumedCoverageMapRes0(w http.ResponseWriter, r *http.Re
 	}
 
 	ret := &AssumedCoverageHexContainer{Hexes: coverageLocations}
-	w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Header().Set("Cache-Control", "public, max-age=600")
 	encoding.ReplyJSON(w, r, http.StatusOK, ret)
 }
 
@@ -97,7 +97,7 @@ func (mapi *MappingAPI) AssumedCoverageMap(w http.ResponseWriter, r *http.Reques
 	}
 
 	ret := &AssumedCoverageHexContainer{Hexes: coverageLocations}
-	w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Header().Set("Cache-Control", "public, max-age=600")
 	encoding.ReplyJSON(w, r, http.StatusOK, ret)
 
 }
@@ -143,6 +143,6 @@ func (mapi *MappingAPI) CoverageMap(w http.ResponseWriter, r *http.Request) {
 		Hexes: chs,
 	}
 
-	w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Header().Set("Cache-Control", "public, max-age=600")
 	encoding.ReplyJSON(w, r, http.StatusOK, chc)
 }
