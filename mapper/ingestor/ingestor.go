@@ -90,7 +90,7 @@ func (gi *MapperIngestor) EventsFunc(ctx context.Context, events []*types.Mapper
 }
 
 func (gi *MapperIngestor) SetCurrentBlockFunc(ctx context.Context, height uint64) error {
-	if height-gi.lastPendingEventCleanHeight > 10000 {
+	if height-gi.lastPendingEventCleanHeight > 500 {
 		err := gi.store.CleanOldPendingEvents(ctx, height)
 		if err != nil {
 			logrus.WithError(err).Warn("error while cleaning old pending events, continuing as these will be cleaned up anyway")
