@@ -618,5 +618,20 @@ func (s *Store) PurgeExpiredOnboards(ctx context.Context) error {
 
 	logrus.WithField("#", len(expiredKeys)).Info("purged expired gateway onboard messages")
 
+	var gatewayOnboards []*models.DBGatewayOnboard
+	q = datastore.NewQuery((&models.DBGatewayOnboard{}).Entity())
+	_, err = s.client.GetAll(ctx, q, &gatewayOnboards)
+	if err != nil {
+		return err
+	}
+
+	for _, gatewayOnboard := range gatewayOnboards {
+		gw, _ := s.Get(ctx, types.IDFromString(gatewayOnboard.GatewayID))
+		if gw != nil {
+			s.client.Delete(ctx, daclouddatastore.GetKey(gatewayOnboard))
+			logrus.WithField("gateway-id", gw.ID).Info("purged gateway onboard that was already onboarded")
+		}
+	}
+
 	return nil
 }
