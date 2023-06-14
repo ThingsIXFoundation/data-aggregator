@@ -68,7 +68,7 @@ func (gapi *GatewayAPI) Bind(root *chi.Mux) error {
 
 func (gapi *GatewayAPI) Run(ctx context.Context) {
 	for {
-		if err := gapi.store.PurgeExpiredOnboards(ctx); err != nil {
+		if err := gapi.store.PurgeExpiredOnboards(ctx, 7*24*time.Hour); err != nil {
 			logrus.WithError(err).Error("unable to purge expired gateway onboard")
 		}
 		select {

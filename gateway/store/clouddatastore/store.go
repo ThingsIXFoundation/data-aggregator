@@ -545,7 +545,7 @@ func (s *Store) GetInCell(ctx context.Context, cell h3light.Cell) ([]*types.Gate
 }
 
 func (s *Store) StoreGatewayOnboard(ctx context.Context, onboarder common.Address, gatewayID types.ID, owner common.Address, signature string, version uint8, localId string) error {
-	dbonboard := *models.NewDBGatewayOnboard(gatewayID, owner, signature, version, localId, onboarder)
+	dbonboard := *models.NewDBGatewayOnboard(gatewayID, owner, signature, version, localId, onboarder, time.Now())
 	_, err := s.client.Put(ctx, daclouddatastore.GetKey(&dbonboard), &dbonboard)
 	return err
 }
@@ -604,8 +604,8 @@ func (s *Store) GetGatewayOnboardsByOwner(ctx context.Context, onboarder common.
 	return dbGatewayOnboards, cursorObj.String(), nil
 }
 
-func (s *Store) PurgeExpiredOnboards(ctx context.Context) error {
-	q := datastore.NewQuery((&models.DBGatewayOnboard{}).Entity()).KeysOnly().FilterField("Expires", "<=", time.Now())
+func (s *Store) PurgeExpiredOnboards(ctx context.Context, expiry time.Duration) error {
+	q := datastore.NewQuery((&models.DBGatewayOnboard{}).Entity()).KeysOnly().FilterField("CreatedAt", "<=", time.Now().Add(-1*expiry))
 
 	expiredKeys, err := s.client.GetAll(ctx, q, nil)
 	if err != nil {

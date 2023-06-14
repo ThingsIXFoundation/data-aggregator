@@ -62,7 +62,7 @@ type Store interface {
 	GetGatewayOnboardsByOwner(ctx context.Context, onboarder common.Address, owner common.Address, limit int, cursor string) ([]*models.GatewayOnboard, string, error)
 	GetGatewayOnboardByGatewayID(ctx context.Context, gatewayID string) (*models.GatewayOnboard, error)
 
-	PurgeExpiredOnboards(ctx context.Context) error
+	PurgeExpiredOnboards(ctx context.Context, expiry time.Duration) error
 }
 
 func NewStore() (Store, error) {
