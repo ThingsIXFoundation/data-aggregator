@@ -236,11 +236,16 @@ func (s *Store) StoreMapping(ctx context.Context, mappingRecord *types.MappingRe
 
 	var dbDiscoveryRecordKeys []*datastore.Key
 	var dbDiscoveryRecords []*models.DBMappingDiscoveryReceiptRecord
+	dbDiscoveryRecordGatewaySeen := make(map[types.ID]bool)
 
 	for _, discoveryRecord := range mappingRecord.DiscoveryReceiptRecords {
+		if _, ok := dbDiscoveryRecordGatewaySeen[discoveryRecord.GatewayID]; ok {
+			continue
+		}
 		dbDiscoveryRecord := models.NewDBMappingDiscoveryReceiptRecord(mappingRecord.ID, discoveryRecord)
 		dbDiscoveryRecordKeys = append(dbDiscoveryRecordKeys, clouddatastore.GetKey(dbDiscoveryRecord))
 		dbDiscoveryRecords = append(dbDiscoveryRecords, dbDiscoveryRecord)
+		dbDiscoveryRecordGatewaySeen[discoveryRecord.GatewayID] = true
 	}
 
 	_, err = s.client.PutMulti(ctx, dbDiscoveryRecordKeys, dbDiscoveryRecords)
@@ -251,11 +256,16 @@ func (s *Store) StoreMapping(ctx context.Context, mappingRecord *types.MappingRe
 
 	var dbDownlinkRecordKeys []*datastore.Key
 	var dbDownlinkRecords []*models.DBMappingDownlinkReceiptRecord
+	dbDownlinkRecordGatewaySeen := make(map[types.ID]bool)
 
 	for _, downlinkRecord := range mappingRecord.DownlinkReceiptRecords {
+		if _, ok := dbDownlinkRecordGatewaySeen[downlinkRecord.GatewayID]; ok {
+			continue
+		}
 		dbDownlinkRecord := models.NewDBMappingDownlinkReceiptRecord(mappingRecord.ID, downlinkRecord)
 		dbDownlinkRecordKeys = append(dbDownlinkRecordKeys, clouddatastore.GetKey(dbDownlinkRecord))
 		dbDownlinkRecords = append(dbDownlinkRecords, dbDownlinkRecord)
+		dbDownlinkRecordGatewaySeen[downlinkRecord.GatewayID] = true
 	}
 
 	_, err = s.client.PutMulti(ctx, dbDownlinkRecordKeys, dbDownlinkRecords)
