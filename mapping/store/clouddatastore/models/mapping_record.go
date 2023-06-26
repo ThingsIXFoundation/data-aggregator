@@ -27,8 +27,8 @@ import (
 
 type DBMappingRecord struct {
 	ID                        string
-	DiscoveryPhy              []byte
-	DownlinkPhy               []byte
+	DiscoveryPhy              []byte `datastore:",noindex"`
+	DownlinkPhy               []byte `datastore:",noindex"`
 	MeasuredRssi              *int
 	MeasuredSnr               *int
 	FrequencyPlan             string

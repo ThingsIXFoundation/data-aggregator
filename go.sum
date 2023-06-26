@@ -72,8 +72,8 @@ github.com/ThingsIXFoundation/packet-handling v1.1.1 h1:Uch0dsDk0cMEMBSwunU8B4ZR
 github.com/ThingsIXFoundation/packet-handling v1.1.1/go.mod h1:Lcy920mGnVgG2l4g3fFb5sa0CZESelsQXKFv4HhOIYc=
 github.com/ThingsIXFoundation/router-registry-go v1.1.0 h1:zWZMhrc4ZuLVR5X2hsu1TVSpkQJo4xM/+oWMrW7bUK0=
 github.com/ThingsIXFoundation/router-registry-go v1.1.0/go.mod h1:JA8B+SBQEL1MAvHrbNw053bSzq++BBwW7QJ/s7BH018=
-github.com/ThingsIXFoundation/types v0.0.0-20230515082853-97e74d78c30a h1:ODxheQ+UQ14q/dZBk6yVNPHi1FTwMLntoUXsl+jU9Ek=
-github.com/ThingsIXFoundation/types v0.0.0-20230515082853-97e74d78c30a/go.mod h1:YpwDuz/LGDRQQGOx7+quedpl/rUxmTgmE4vbspPHRAs=
+github.com/ThingsIXFoundation/types v0.0.0-20230626132810-69408e3c1ec8 h1:/xwkuFYOEsmXZy4W/VN7pUw0vmEk00Sdl4q5FPT+isk=
+github.com/ThingsIXFoundation/types v0.0.0-20230626132810-69408e3c1ec8/go.mod h1:YpwDuz/LGDRQQGOx7+quedpl/rUxmTgmE4vbspPHRAs=
 github.com/VictoriaMetrics/fastcache v1.6.0 h1:C/3Oi3EiBCqufydp1neRZkqcwmEiuRT9c3fqvvgKm5o=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=

@@ -46,6 +46,9 @@ type DBCoverageHistory struct {
 	// ID of the mapping record that was used to base this coverage on
 	MappingID string
 
+	// time of the mapping record that was used to base this coverage on
+	MappingTime time.Time
+
 	// The RSSI (signal strength) of coverage at this location
 	RSSI int
 }
@@ -67,6 +70,7 @@ func NewDBCoverageHistory(m *types.CoverageHistory) *DBCoverageHistory {
 		FrequencyPlan:   m.FrequencyPlan,
 		MapperID:        m.MapperID.String(),
 		MappingID:       m.MappingID.String(),
+		MappingTime:     m.MappingTime,
 		RSSI:            m.RSSI,
 	}
 }
@@ -80,6 +84,7 @@ func (e *DBCoverageHistory) CoverageHistory() *types.CoverageHistory {
 		FrequencyPlan:   e.FrequencyPlan,
 		MapperID:        types.IDFromString(e.MapperID),
 		MappingID:       types.IDFromString(e.MappingID),
+		MappingTime:     e.MappingTime,
 		RSSI:            e.RSSI,
 	}
 }

@@ -25,16 +25,16 @@ import (
 
 type DBMappingDownlinkReceiptRecord struct {
 	MappingID         string
-	Frequency         int
-	Rssi              int
-	Snr               float64
-	SpreadingFactor   int
-	Bandwidth         int
-	CodeRate          string
-	Phy               []byte
+	Frequency         int     `datastore:",noindex"`
+	Rssi              int     `datastore:",noindex"`
+	Snr               float64 `datastore:",noindex"`
+	SpreadingFactor   int     `datastore:",noindex"`
+	Bandwidth         int     `datastore:",noindex"`
+	CodeRate          string  `datastore:",noindex"`
+	Phy               []byte  `datastore:",noindex"`
 	ReceivedTime      time.Time
 	GatewayTime       time.Time
-	GatewaySignature  []byte
+	GatewaySignature  []byte `datastore:",noindex"`
 	GatewayID         string
 	MapperID          string
 	ServiceValidation types.MappingRecordValidation
