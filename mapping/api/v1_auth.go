@@ -121,14 +121,14 @@ func (mapi *MappingAPI) SubmitSignature(w http.ResponseWriter, r *http.Request) 
 
 	err := json.NewDecoder(r.Body).Decode(&signatureRequest)
 	if err != nil {
-		log.Warnf("invalid request body")
+		log.WithError(err).Warnf("invalid request body")
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
 
 	hash, err := challengeHash(signatureRequest.Owner, signatureRequest.Challenge)
 	if err != nil {
-		log.Warnf("invalid request")
+		log.WithError(err).Warnf("invalid request")
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
@@ -197,7 +197,7 @@ func challengeHash(owner common.Address, challenge string) ([]byte, error) {
 	stringTy, _ := abi.NewType("string", "", nil)
 	addressTy, _ := abi.NewType("address", "", nil)
 
-	args := abi.Arguments{{Type: stringTy},
+	args := abi.Arguments{
 		{Type: stringTy},
 		{Type: stringTy},
 		{Type: addressTy},
