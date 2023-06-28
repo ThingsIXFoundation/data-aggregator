@@ -46,6 +46,19 @@ func (mapi *MappingAPI) AssumedCoverageMapRes0(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	latestRewardsDate, err := mapi.rewardStore.GetLatestRewardsDateCached(ctx)
+	if err != nil {
+		log.WithError(err).Error("cannot get latest reward date")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	if latestRewardsDate.Before(at) {
+		log.Warnf("invalid date provided: %s", date)
+		http.Error(w, "invalid date", http.StatusBadRequest)
+		return
+	}
+
 	coverageLocations, err := mapi.store.GetAllAssumedCoverageLocationsAtWithRes(ctx, at, 6)
 	if err != nil {
 		log.WithError(err).Error("error while getting coverage locations")
@@ -54,7 +67,7 @@ func (mapi *MappingAPI) AssumedCoverageMapRes0(w http.ResponseWriter, r *http.Re
 	}
 
 	ret := &AssumedCoverageHexContainer{Hexes: coverageLocations}
-	w.Header().Set("Cache-Control", "public, max-age=600")
+	w.Header().Set("Cache-Control", "public, max-age=86400")
 	encoding.ReplyJSON(w, r, http.StatusOK, ret)
 }
 
@@ -69,6 +82,19 @@ func (mapi *MappingAPI) AssumedCoverageMap(w http.ResponseWriter, r *http.Reques
 
 	at, err := time.Parse(time.DateOnly, date)
 	if err != nil {
+		log.Warnf("invalid date provided: %s", date)
+		http.Error(w, "invalid date", http.StatusBadRequest)
+		return
+	}
+
+	latestRewardsDate, err := mapi.rewardStore.GetLatestRewardsDateCached(ctx)
+	if err != nil {
+		log.WithError(err).Error("cannot get latest reward date")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	if latestRewardsDate.Before(at) {
 		log.Warnf("invalid date provided: %s", date)
 		http.Error(w, "invalid date", http.StatusBadRequest)
 		return
@@ -97,7 +123,7 @@ func (mapi *MappingAPI) AssumedCoverageMap(w http.ResponseWriter, r *http.Reques
 	}
 
 	ret := &AssumedCoverageHexContainer{Hexes: coverageLocations}
-	w.Header().Set("Cache-Control", "public, max-age=600")
+	w.Header().Set("Cache-Control", "public, max-age=86400")
 	encoding.ReplyJSON(w, r, http.StatusOK, ret)
 
 }
@@ -113,6 +139,19 @@ func (mapi *MappingAPI) CoverageMap(w http.ResponseWriter, r *http.Request) {
 
 	at, err := time.Parse(time.DateOnly, date)
 	if err != nil {
+		log.Warnf("invalid date provided: %s", date)
+		http.Error(w, "invalid date", http.StatusBadRequest)
+		return
+	}
+
+	latestRewardsDate, err := mapi.rewardStore.GetLatestRewardsDateCached(ctx)
+	if err != nil {
+		log.WithError(err).Error("cannot get latest reward date")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	if latestRewardsDate.Before(at) {
 		log.Warnf("invalid date provided: %s", date)
 		http.Error(w, "invalid date", http.StatusBadRequest)
 		return
@@ -143,6 +182,6 @@ func (mapi *MappingAPI) CoverageMap(w http.ResponseWriter, r *http.Request) {
 		Hexes: chs,
 	}
 
-	w.Header().Set("Cache-Control", "public, max-age=600")
+	w.Header().Set("Cache-Control", "public, max-age=86400")
 	encoding.ReplyJSON(w, r, http.StatusOK, chc)
 }

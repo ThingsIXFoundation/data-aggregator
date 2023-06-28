@@ -431,3 +431,47 @@ func (s *Store) GetValidMappingsInRegionBetween(ctx context.Context, region h3li
 
 	return mappingRecords, nil
 }
+
+func (s *Store) GetMappingAuthTokenByCode(ctx context.Context, code string) (*models.DBMappingAuthToken, error) {
+	var authToken models.DBMappingAuthToken
+	q := datastore.NewQuery((&models.DBMappingAuthToken{}).Entity()).FilterField("Code", "=", code).Limit(1)
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&authToken)
+	if err != nil && err != iterator.Done {
+		return nil, err
+	}
+	if err != nil && err == iterator.Done {
+		return nil, nil
+	}
+	return &authToken, nil
+}
+
+func (s *Store) GetMappingAuthTokenByChallenge(ctx context.Context, challenge string) (*models.DBMappingAuthToken, error) {
+	var authToken models.DBMappingAuthToken
+	q := datastore.NewQuery((&models.DBMappingAuthToken{}).Entity()).FilterField("Challenge", "=", challenge).Limit(1)
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&authToken)
+	if err != nil && err != iterator.Done {
+		return nil, err
+	}
+	if err != nil && err == iterator.Done {
+		return nil, nil
+	}
+	return &authToken, nil
+}
+
+func (s *Store) StoreMappingAuthToken(ctx context.Context, mappingAuthToken *models.DBMappingAuthToken) error {
+	_, err := s.client.Put(ctx, clouddatastore.GetKey(mappingAuthToken), mappingAuthToken)
+	return err
+}
+
+func (s *Store) DeleteAllMappingAuthTokens(ctx context.Context, owner string) error {
+	q := datastore.NewQuery((&models.DBMappingAuthToken{}).Entity()).FilterField("Owner", "=", owner).KeysOnly()
+
+	keys, err := s.client.GetAll(ctx, q, nil)
+	if err != nil {
+		return err
+	}
+
+	return s.client.DeleteMulti(ctx, keys)
+}

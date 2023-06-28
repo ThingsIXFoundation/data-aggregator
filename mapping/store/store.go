@@ -23,6 +23,7 @@ import (
 
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/mapping/store/clouddatastore"
+	"github.com/ThingsIXFoundation/data-aggregator/mapping/store/clouddatastore/models"
 	h3light "github.com/ThingsIXFoundation/h3-light"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/spf13/viper"
@@ -45,6 +46,10 @@ type Store interface {
 	GetAssumedCoverageLocationsForGateway(ctx context.Context, gatewayID types.ID, at time.Time) ([]h3light.Cell, error)
 
 	GetMinMaxCoverageDates(ctx context.Context) (time.Time, time.Time, error)
+
+	GetMappingAuthTokenByCode(ctx context.Context, code string) (*models.DBMappingAuthToken, error)
+	GetMappingAuthTokenByChallenge(ctx context.Context, challenge string) (*models.DBMappingAuthToken, error)
+	StoreMappingAuthToken(ctx context.Context, mappingAuthToken *models.DBMappingAuthToken) error
 }
 
 func NewStore() (Store, error) {

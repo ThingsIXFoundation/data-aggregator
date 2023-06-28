@@ -48,6 +48,8 @@ type Store interface {
 	GetGatewayRewardsBetween(ctx context.Context, gatewayID types.ID, start, end time.Time) ([]*types.GatewayRewardHistory, error)
 
 	GetLatestRewardsDate(ctx context.Context) (time.Time, error)
+	GetLatestRewardsDateCached(ctx context.Context) (time.Time, error)
+	GetMinMaxRewardsDates(ctx context.Context) (time.Time, time.Time, error)
 }
 
 func NewStore() (Store, error) {

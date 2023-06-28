@@ -17,13 +17,17 @@
 package api
 
 import (
+	mapperStore "github.com/ThingsIXFoundation/data-aggregator/mapper/store"
 	"github.com/ThingsIXFoundation/data-aggregator/mapping/store"
+	rewardStore "github.com/ThingsIXFoundation/data-aggregator/rewards/store"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/go-chi/chi/v5"
 )
 
 type MappingAPI struct {
-	store store.Store
+	store       store.Store
+	rewardStore rewardStore.Store
+	mapperStore mapperStore.Store
 }
 
 func NewMappingAPI() (*MappingAPI, error) {
@@ -31,8 +35,21 @@ func NewMappingAPI() (*MappingAPI, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	rewardStore, err := rewardStore.NewStore()
+	if err != nil {
+		return nil, err
+	}
+
+	mapperStore, err := mapperStore.NewStore()
+	if err != nil {
+		return nil, err
+	}
+
 	return &MappingAPI{
-		store: store,
+		store:       store,
+		rewardStore: rewardStore,
+		mapperStore: mapperStore,
 	}, nil
 }
 
@@ -41,6 +58,8 @@ func (mapi *MappingAPI) Bind(root *chi.Mux) error {
 		r.Route("/v1", func(r chi.Router) {
 			r.Get("/{id:(?i)(0x)?[0-9a-f]{64}}", mapi.GetMappingById)
 			r.Get("/mapper/{id:(?i)(0x)?[0-9a-f]{64}}/recent", mapi.GetRecentMappingsForMapper)
+			r.Post("/auth/challenge", mapi.CreateChallenge)
+			r.Post("/auth/signature", mapi.SubmitSignature)
 		})
 	})
 
@@ -50,6 +69,9 @@ func (mapi *MappingAPI) Bind(root *chi.Mux) error {
 			r.Get("/map/{date:^[0-9]{4}-[0-9]{2}-[0-9]{2}$}/res0/assumed", mapi.AssumedCoverageMapRes0)
 			r.Get("/map/{date:^[0-9]{4}-[0-9]{2}-[0-9]{2}$}/{hex:(?i)[0-9a-f]{15}}/assumed", mapi.AssumedCoverageMap)
 			r.Get("/map/{date:^[0-9]{4}-[0-9]{2}-[0-9]{2}$}/{hex:(?i)[0-9a-f]{15}}/coverage", mapi.CoverageMap)
+			r.Get("/gateway/{id:(?i)(0x)?[0-9a-f]{64}}/{date:^[0-9]{4}-[0-9]{2}-[0-9]{2}$}/assumed", mapi.AssumedCoverageForGatewayAt)
+			r.Get("/gateway/{id:(?i)(0x)?[0-9a-f]{64}}/{date:^[0-9]{4}-[0-9]{2}-[0-9]{2}$}/coverage", mapi.CoverageForGatewayAt)
+
 		})
 	})
 

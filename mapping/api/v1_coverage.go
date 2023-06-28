@@ -23,6 +23,8 @@ import (
 
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
+	"github.com/ThingsIXFoundation/types"
+	"github.com/go-chi/chi/v5"
 )
 
 func (mapi *MappingAPI) MinMaxCoverageDates(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +34,7 @@ func (mapi *MappingAPI) MinMaxCoverageDates(w http.ResponseWriter, r *http.Reque
 	)
 	defer cancel()
 
-	min, max, err := mapi.store.GetMinMaxCoverageDates(ctx)
+	min, max, err := mapi.rewardStore.GetMinMaxRewardsDates(ctx)
 	if err != nil {
 		log.WithError(err).Error("error while getting min max coverage date")
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -44,5 +46,95 @@ func (mapi *MappingAPI) MinMaxCoverageDates(w http.ResponseWriter, r *http.Reque
 		Max: max.Format(time.DateOnly),
 	}
 
+	encoding.ReplyJSON(w, r, http.StatusOK, ret)
+}
+
+func (mapi *MappingAPI) CoverageForGatewayAt(w http.ResponseWriter, r *http.Request) {
+	var (
+		log          = logging.WithContext(r.Context())
+		ctx, cancel  = context.WithTimeout(r.Context(), 1*time.Minute)
+		date         = chi.URLParam(r, "date")
+		gatewayIdStr = chi.URLParam(r, "id")
+	)
+	defer cancel()
+
+	at, err := time.Parse(time.DateOnly, date)
+	if err != nil {
+		log.Warnf("invalid date provided: %s", date)
+		http.Error(w, "invalid date", http.StatusBadRequest)
+		return
+	}
+
+	gatewayID := types.IDFromString(gatewayIdStr)
+
+	latestRewardsDate, err := mapi.rewardStore.GetLatestRewardsDateCached(ctx)
+	if err != nil {
+		log.WithError(err).Error("cannot get latest reward date")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	if latestRewardsDate.Before(at) {
+		log.Warnf("invalid date provided: %s", date)
+		http.Error(w, "invalid date", http.StatusBadRequest)
+		return
+	}
+
+	chs, err := mapi.store.GetCoverageForGatewayAt(ctx, gatewayID, at)
+	if err != nil {
+		log.WithError(err).Error("error while getting gateway coverage")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	chc := &CoverageHexContainer{
+		Hexes: chs,
+	}
+
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+	encoding.ReplyJSON(w, r, http.StatusOK, chc)
+}
+
+func (mapi *MappingAPI) AssumedCoverageForGatewayAt(w http.ResponseWriter, r *http.Request) {
+	var (
+		log          = logging.WithContext(r.Context())
+		ctx, cancel  = context.WithTimeout(r.Context(), 1*time.Minute)
+		date         = chi.URLParam(r, "date")
+		gatewayIdStr = chi.URLParam(r, "id")
+	)
+	defer cancel()
+
+	at, err := time.Parse(time.DateOnly, date)
+	if err != nil {
+		log.Warnf("invalid date provided: %s", date)
+		http.Error(w, "invalid date", http.StatusBadRequest)
+		return
+	}
+
+	gatewayID := types.IDFromString(gatewayIdStr)
+
+	latestRewardsDate, err := mapi.rewardStore.GetLatestRewardsDateCached(ctx)
+	if err != nil {
+		log.WithError(err).Error("cannot get latest reward date")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	if latestRewardsDate.Before(at) {
+		log.Warnf("invalid date provided: %s", date)
+		http.Error(w, "invalid date", http.StatusBadRequest)
+		return
+	}
+
+	coverageLocations, err := mapi.store.GetAssumedCoverageLocationsForGateway(ctx, gatewayID, at)
+	if err != nil {
+		log.WithError(err).Error("error while getting gateway coverage")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	ret := &AssumedCoverageHexContainer{Hexes: coverageLocations}
+
+	w.Header().Set("Cache-Control", "public, max-age=86400")
 	encoding.ReplyJSON(w, r, http.StatusOK, ret)
 }

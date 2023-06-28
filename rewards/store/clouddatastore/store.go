@@ -32,6 +32,9 @@ import (
 
 type Store struct {
 	client *datastore.Client
+
+	latestRewardDateCache       time.Time
+	latestRewardDateCacheExpiry time.Time
 }
 
 //var _ store.Store = &Store{}
@@ -158,20 +161,6 @@ func NewStore(ctx context.Context) (*Store, error) {
 
 	return s, nil
 
-}
-
-// GetLatestRewardsDate implements store.Store
-func (s *Store) GetLatestRewardsDate(ctx context.Context) (time.Time, error) {
-	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).Limit(1).Order("-Date")
-
-	var dbAccountRewardHistory models.DBAccountRewardHistory
-
-	it := s.client.Run(ctx, q)
-	_, err := it.Next(&dbAccountRewardHistory)
-	if err != nil && err != iterator.Done {
-		return time.Time{}, err
-	}
-	return dbAccountRewardHistory.Date, nil
 }
 
 func (s *Store) GetAccountRewards(ctx context.Context, account common.Address, limit int, cursor string) ([]*types.AccountRewardHistory, string, error) {
@@ -416,4 +405,64 @@ func (s *Store) GetGatewayRewardsBetween(ctx context.Context, gatewayID types.ID
 	}
 
 	return rewards, nil
+}
+
+func (s *Store) StoreRewardHistory(ctx context.Context, rewardHistory *types.RewardHistory) error {
+	dbrh := models.NewDBRewardHistory(rewardHistory)
+
+	_, err := s.client.Put(ctx, clouddatastore.GetKey(dbrh), dbrh)
+
+	return err
+}
+
+// GetLatestRewardsDate implements store.Store
+func (s *Store) GetLatestRewardsDate(ctx context.Context) (time.Time, error) {
+	q := datastore.NewQuery((&models.DBRewardHistory{}).Entity()).Limit(1).Order("-Date")
+
+	var dbRewardHistory models.DBRewardHistory
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbRewardHistory)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return dbRewardHistory.Date, nil
+}
+
+func (s *Store) GetLatestRewardsDateCached(ctx context.Context) (time.Time, error) {
+	if time.Since(s.latestRewardDateCacheExpiry) > 5*time.Minute {
+		latestRewardDate, err := s.GetLatestRewardsDate(ctx)
+		if err != nil {
+			return time.Time{}, nil
+		}
+
+		s.latestRewardDateCache = latestRewardDate
+		s.latestRewardDateCacheExpiry = time.Now()
+	}
+
+	return s.latestRewardDateCache, nil
+}
+
+func (s *Store) GetMinMaxRewardsDates(ctx context.Context) (time.Time, time.Time, error) {
+	var dbRewardHistory models.DBRewardHistory
+
+	q := datastore.NewQuery((&models.DBRewardHistory{}).Entity()).Limit(1).Order("-Date")
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbRewardHistory)
+	if err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+
+	max := dbRewardHistory.Date
+
+	q = datastore.NewQuery((&models.DBRewardHistory{}).Entity()).Limit(1).Order("Date")
+	it = s.client.Run(ctx, q)
+	_, err = it.Next(&dbRewardHistory)
+	if err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+
+	min := dbRewardHistory.Date
+
+	return min, max, nil
 }
