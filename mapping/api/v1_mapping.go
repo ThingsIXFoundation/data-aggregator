@@ -22,12 +22,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
 	"github.com/ThingsIXFoundation/types"
-	"github.com/spf13/viper"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 func replyMappingsCursor(mappings []*types.MappingRecord, cursor string, pageSize int, w http.ResponseWriter, r *http.Request) {
@@ -72,6 +71,7 @@ func (mapi *MappingAPI) GetRecentMappingsForMapper(w http.ResponseWriter, r *htt
 		log         = logging.WithContext(r.Context())
 		ctx, cancel = context.WithTimeout(r.Context(), 15*time.Second)
 		cursor      = r.URL.Query().Get("cursor")
+		code        = r.URL.Query().Get("code")
 		pageSize, _ = strconv.Atoi(r.URL.Query().Get("pageSize"))
 		mapperID    = utils.IDFromRequest(r, "id")
 		since       = 24 * time.Hour
@@ -82,9 +82,47 @@ func (mapi *MappingAPI) GetRecentMappingsForMapper(w http.ResponseWriter, r *htt
 		pageSize = 15
 	}
 
+	showLive := false
+
+	if len(code) > 0 {
+		authToken, err := mapi.store.GetMappingAuthTokenByCode(ctx, code)
+		if err != nil {
+			log.WithError(err).Error("cannot get auth token for challenge")
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+
+		if authToken == nil {
+			log.Warnf("invalid code")
+			http.Error(w, "invalid code", http.StatusUnauthorized)
+			return
+		}
+
+		mapper, err := mapi.mapperStore.Get(ctx, mapperID)
+		if err != nil {
+			log.WithError(err).Error("cannot get mapper")
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+
+		if mapper == nil {
+			log.Warnf("unknown mapper")
+			http.Error(w, "unknown mapper", http.StatusNotFound)
+			return
+		}
+
+		if mapper.Owner != nil && *mapper.Owner == common.HexToAddress(authToken.Owner) {
+			showLive = true
+		} else {
+			log.Warnf("invalid code")
+			http.Error(w, "invalid code", http.StatusUnauthorized)
+			return
+		}
+	}
+
 	start := time.Now().Add(-1 * since)
 	end := time.Now().Add(-1 * time.Hour)
-	if viper.GetBool(config.CONFIG_MAPPING_API_SHOW_RECENT_MAPPINGS) {
+	if showLive {
 		end = time.Now()
 	}
 

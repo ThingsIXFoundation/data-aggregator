@@ -60,6 +60,7 @@ func (mapi *MappingAPI) Bind(root *chi.Mux) error {
 			r.Get("/mapper/{id:(?i)(0x)?[0-9a-f]{64}}/recent", mapi.GetRecentMappingsForMapper)
 			r.Post("/auth/challenge", mapi.CreateChallenge)
 			r.Post("/auth/signature", mapi.SubmitSignature)
+			r.Post("/auth/check", mapi.CheckCode)
 		})
 	})
 

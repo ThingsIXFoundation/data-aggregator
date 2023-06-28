@@ -242,8 +242,8 @@ func (mapi *MappingAPI) CheckCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if authToken == nil {
-		log.Warnf("invalid request")
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		log.Warnf("invalid code")
+		http.Error(w, "invalid code", http.StatusUnauthorized)
 		return
 	}
 
@@ -256,7 +256,7 @@ func (mapi *MappingAPI) CheckCode(w http.ResponseWriter, r *http.Request) {
 
 	if mapper == nil {
 		log.Warnf("unknown mapper")
-		http.Error(w, "unknown mapper", http.StatusBadRequest)
+		http.Error(w, "unknown mapper", http.StatusNotFound)
 		return
 	}
 
