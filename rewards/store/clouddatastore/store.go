@@ -24,6 +24,7 @@ import (
 	"github.com/ThingsIXFoundation/data-aggregator/clouddatastore"
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/rewards/store/clouddatastore/models"
+	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/viper"
@@ -41,7 +42,7 @@ type Store struct {
 
 // GetAccountRewardsAt implements store.Store
 func (s *Store) GetAccountRewardsAt(ctx context.Context, account common.Address, at time.Time) (*types.AccountRewardHistory, error) {
-	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).FilterField("Account", "=", account.String()).FilterField("Date", "<=", at).Order("-Date")
+	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).FilterField("Account", "=", utils.AddressToString(account)).FilterField("Date", "<=", at).Order("-Date")
 
 	ret := models.DBAccountRewardHistory{}
 
@@ -59,7 +60,7 @@ func (s *Store) GetAccountRewardsAt(ctx context.Context, account common.Address,
 
 // GetLatestSignedAccountReward implements store.Store
 func (s *Store) GetLatestSignedAccountReward(ctx context.Context, account common.Address) (*types.AccountRewardHistory, error) {
-	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).FilterField("Account", "=", account.String()).Order("-Date")
+	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).FilterField("Account", "=", utils.AddressToString(account)).Order("-Date")
 
 	ret := models.DBAccountRewardHistory{}
 
@@ -165,7 +166,7 @@ func NewStore(ctx context.Context) (*Store, error) {
 
 func (s *Store) GetAccountRewards(ctx context.Context, account common.Address, limit int, cursor string) ([]*types.AccountRewardHistory, string, error) {
 	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).
-		FilterField("Account", "=", account.String()).
+		FilterField("Account", "=", utils.AddressToString(account)).
 		Limit(limit + 1).Order("-Date")
 
 	if cursor != "" {
@@ -216,7 +217,7 @@ func (s *Store) GetAccountRewards(ctx context.Context, account common.Address, l
 
 func (s *Store) GetAccountRewardsBetween(ctx context.Context, account common.Address, start, end time.Time) ([]*types.AccountRewardHistory, error) {
 	q := datastore.NewQuery((&models.DBAccountRewardHistory{}).Entity()).
-		FilterField("Account", "=", account.String()).
+		FilterField("Account", "=", utils.AddressToString(account)).
 		FilterField("Date", ">=", start).FilterField("Date", "<=", end).
 		Order("-Date")
 
