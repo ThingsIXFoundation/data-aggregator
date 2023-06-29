@@ -50,6 +50,7 @@ type Store interface {
 	GetLatestRewardsDate(ctx context.Context) (time.Time, error)
 	GetLatestRewardsDateCached(ctx context.Context) (time.Time, error)
 	GetMinMaxRewardsDates(ctx context.Context) (time.Time, time.Time, error)
+	StoreRewardHistory(ctx context.Context, rewardHistory *types.RewardHistory) error
 }
 
 func NewStore() (Store, error) {
