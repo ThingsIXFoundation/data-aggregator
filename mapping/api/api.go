@@ -76,6 +76,16 @@ func (mapi *MappingAPI) Bind(root *chi.Mux) error {
 		})
 	})
 
+	root.Route("/unverifiedmapping", func(r chi.Router) {
+		r.Route("/v1", func(r chi.Router) {
+			r.Post("/chirpstack", mapi.StoreUnverifiedMapping)
+			r.Get("/map/res0/assumed", mapi.AssumedUnverifiedCoverageMapRes0)
+			r.Get("/map/{hex:(?i)[0-9a-f]{15}}/assumed", mapi.AssumedUnverifiedCoverageMap)
+			r.Get("/map/{hex:(?i)[0-9a-f]{15}}/coverage", mapi.UnverifiedCoverageMap)
+			r.Get("/{id:(?i)(0x)?[0-9a-f]{64}}", mapi.GetUnverifiedMappingById)
+		})
+	})
+
 	return nil
 }
 

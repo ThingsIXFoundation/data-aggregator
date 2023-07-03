@@ -31,3 +31,19 @@ func UintPtrToIntPtr(i *uint) *int {
 
 	return Ptr(int(*i))
 }
+
+func Int32PtrToIntPtr(i *int32) *int {
+	if i == nil {
+		return nil
+	}
+
+	return Ptr(int(*i))
+}
+
+func IntPtrToInt32Ptr(i *int) *int32 {
+	if i == nil {
+		return nil
+	}
+
+	return Ptr(int32(*i))
+}

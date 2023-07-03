@@ -29,6 +29,10 @@ type CoverageHexContainer struct {
 	Hexes []*types.CoverageHistory `json:"hexes,omitempty"`
 }
 
+type UnverifiedCoverageHexContainer struct {
+	Hexes []*types.UnverifiedMappingRecord `json:"hexes,omitempty"`
+}
+
 type MinMaxCoverageDates struct {
 	Min string `json:"min"`
 	Max string `json:"max"`

@@ -1,3 +1,19 @@
+// Copyright 2023 Stichting ThingsIX Foundation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package api
 
 import (
@@ -10,6 +26,7 @@ import (
 	"time"
 
 	"github.com/ThingsIXFoundation/data-aggregator/mapping/store/clouddatastore/models"
+	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
 	"github.com/ThingsIXFoundation/types"
@@ -88,7 +105,7 @@ func (mapi *MappingAPI) CreateChallenge(w http.ResponseWriter, r *http.Request) 
 	}
 
 	authToken := models.DBMappingAuthToken{
-		Owner:      challengeRequest.Owner.String(),
+		Owner:      utils.AddressToString(challengeRequest.Owner),
 		Expiration: time.Now().Add(6 * 30 * 24 * time.Hour),
 		Code:       "",
 		Challenge:  hex.Dump(challenge),
@@ -178,9 +195,16 @@ func (mapi *MappingAPI) SubmitSignature(w http.ResponseWriter, r *http.Request) 
 	authToken.Expiration = time.Now().Add(6 * 30 * 24 * time.Hour)
 	authToken.Code = code
 
+	err = mapi.store.DeleteAllMappingAuthTokens(ctx, authToken.Owner)
+	if err != nil {
+		log.WithError(err).Error("cannot clean auth token")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
 	err = mapi.store.StoreMappingAuthToken(ctx, authToken)
 	if err != nil {
-		log.WithError(err).Error("cannot get random string")
+		log.WithError(err).Error("cannot store auth token")
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
