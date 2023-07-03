@@ -27,6 +27,7 @@ import (
 	h3light "github.com/ThingsIXFoundation/h3-light"
 	"github.com/ThingsIXFoundation/types"
 	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/api/iterator"
@@ -473,5 +474,185 @@ func (s *Store) DeleteAllMappingAuthTokens(ctx context.Context, owner string) er
 		return err
 	}
 
-	return s.client.DeleteMulti(ctx, keys)
+	err = s.client.DeleteMulti(ctx, keys)
+	if err != nil {
+		return err
+	}
+
+	q = datastore.NewQuery((&models.DBMappingAuthToken{}).Entity()).FilterField("Owner", "=", common.HexToAddress(owner).String()).KeysOnly()
+
+	keys, err = s.client.GetAll(ctx, q, nil)
+	if err != nil {
+		return err
+	}
+
+	err = s.client.DeleteMulti(ctx, keys)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Store) GetUnverifiedMappingRecord(ctx context.Context, id types.ID) (*types.UnverifiedMappingRecord, error) {
+	dbMappingRecord := models.DBUnverifiedMappingRecord{
+		ID: id.String(),
+	}
+
+	err := s.client.Get(ctx, clouddatastore.GetKey(&dbMappingRecord), &dbMappingRecord)
+	if err != nil {
+		return nil, err
+	}
+
+	record := dbMappingRecord.UnverifiedMappingRecord()
+	record.GatewayRecords, err = s.getUnverifiedMappingGatewayRecordForMapping(ctx, record.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return record, nil
+}
+
+func (s *Store) getUnverifiedMappingGatewayRecordForMapping(ctx context.Context, mappingID types.ID) ([]*types.UnverifiedMappingGatewayRecord, error) {
+	var dbGatewayRecords []*models.DBUnverifiedMappingGatewayRecord
+
+	q := datastore.NewQuery((&models.DBUnverifiedMappingGatewayRecord{}).Entity()).FilterField("MappingID", "=", mappingID.String())
+	_, err := s.client.GetAll(ctx, q, &dbGatewayRecords)
+	if err != nil {
+		return nil, err
+	}
+
+	gatewayRecords := make([]*types.UnverifiedMappingGatewayRecord, len(dbGatewayRecords))
+	for i, dbRecord := range dbGatewayRecords {
+		gatewayRecords[i] = dbRecord.UnverifiedMappingGatewayRecord()
+	}
+
+	return gatewayRecords, nil
+}
+
+func (s *Store) GetUnverifiedMappingRecordsInRegion(ctx context.Context, region h3light.Cell) ([]*types.UnverifiedMappingRecord, error) {
+	q := datastore.NewQuery((&models.DBUnverifiedMappingRecord{}).Entity())
+	q = clouddatastore.QueryBeginsWith(q, "MapperLocation", string(region.DatabaseCell()))
+
+	var dbUnverifiedMappingRecords []*models.DBUnverifiedMappingRecord
+	_, err := s.client.GetAll(ctx, q, &dbUnverifiedMappingRecords)
+	if err != nil {
+		return nil, err
+	}
+
+	mappingRecords := make([]*types.UnverifiedMappingRecord, len(dbUnverifiedMappingRecords))
+	for i, dbMappingRecord := range dbUnverifiedMappingRecords {
+		mappingRecords[i] = dbMappingRecord.UnverifiedMappingRecord()
+	}
+
+	return mappingRecords, nil
+}
+
+func (s *Store) StoreUnverifiedMappingRecord(ctx context.Context, mappingRecord *types.UnverifiedMappingRecord) error {
+	dbRecord, err := models.NewDBUnverifiedMappingRecord(mappingRecord)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.client.Put(ctx, clouddatastore.GetKey(dbRecord), dbRecord)
+	if err != nil {
+		return err
+	}
+
+	err = s.storeUnverifiedGatewayMappingRecords(ctx, mappingRecord.GatewayRecords)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Store) storeUnverifiedGatewayMappingRecords(ctx context.Context, gatewayMappingRecords []*types.UnverifiedMappingGatewayRecord) error {
+	var dbGatewayRecords []*models.DBUnverifiedMappingGatewayRecord
+	var dbGatewayRecordKeys []*datastore.Key
+
+	for _, gatewayRecord := range gatewayMappingRecords {
+		dbGatewayRecord, err := models.NewDBUnverifiedGatewayMappingRecord(gatewayRecord)
+		if err != nil {
+			return err
+		}
+		dbGatewayRecords = append(dbGatewayRecords, dbGatewayRecord)
+		dbGatewayRecordKeys = append(dbGatewayRecordKeys, clouddatastore.GetKey(dbGatewayRecord))
+	}
+
+	_, err := s.client.PutMulti(ctx, dbGatewayRecordKeys, &dbGatewayRecords)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Store) StoreAssumedUnverifiedCoverage(ctx context.Context, assumedCoverage *types.AssumedUnverifiedCoverage) error {
+	dbRecord := models.NewDBAssumedUnverifiedCoverage(assumedCoverage)
+
+	_, err := s.client.Put(ctx, clouddatastore.GetKey(dbRecord), dbRecord)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Store) GetAssumedUnverifiedCoverageByLocation(ctx context.Context, location h3light.Cell) (*types.AssumedUnverifiedCoverage, error) {
+	assumedCoverage := &models.DBAssumedUnverifiedCoverage{Location: location.DatabaseCell()}
+
+	err := s.client.Get(ctx, clouddatastore.GetKey(assumedCoverage), &assumedCoverage)
+	if err != nil {
+		if err == datastore.ErrNoSuchEntity {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	return assumedCoverage.AssumedUnverifiedCoverage(), nil
+}
+
+func (s *Store) GetAllAssumedUnverifiedCoverageLocationsWithRes(ctx context.Context, res int) ([]h3light.Cell, error) {
+	locationSet := mapset.NewThreadUnsafeSet[h3light.Cell]()
+
+	q := datastore.NewQuery((&models.DBAssumedUnverifiedCoverage{}).Entity())
+
+	var dbagch models.DBAssumedUnverifiedCoverage
+
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbagch)
+	for err == nil {
+		locationSet.Add(dbagch.Location.Cell().Parent(res))
+
+		_, err = it.Next(&dbagch)
+	}
+	if err != iterator.Done {
+		return nil, err
+	}
+
+	return locationSet.ToSlice(), nil
+}
+
+func (s *Store) GetAssumedUnverifiedCoverageLocationsInRegionWithRes(ctx context.Context, region h3light.Cell, res int) ([]h3light.Cell, error) {
+	locationSet := mapset.NewThreadUnsafeSet[h3light.Cell]()
+
+	q := datastore.NewQuery((&models.DBAssumedUnverifiedCoverage{}).Entity())
+	q = clouddatastore.QueryBeginsWith(q, "Location", string(region.DatabaseCell()))
+
+	var dbagch models.DBAssumedUnverifiedCoverage
+
+	it := s.client.Run(ctx, q)
+	_, err := it.Next(&dbagch)
+	for err == nil {
+		locationSet.Add(dbagch.Location.Cell().Parent(res))
+
+		_, err = it.Next(&dbagch)
+	}
+	if err != iterator.Done {
+		return nil, err
+	}
+
+	return locationSet.ToSlice(), nil
 }

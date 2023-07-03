@@ -50,6 +50,16 @@ type Store interface {
 	GetMappingAuthTokenByCode(ctx context.Context, code string) (*models.DBMappingAuthToken, error)
 	GetMappingAuthTokenByChallenge(ctx context.Context, challenge string) (*models.DBMappingAuthToken, error)
 	StoreMappingAuthToken(ctx context.Context, mappingAuthToken *models.DBMappingAuthToken) error
+	DeleteAllMappingAuthTokens(ctx context.Context, owner string) error
+
+	StoreUnverifiedMappingRecord(ctx context.Context, mappingRecord *types.UnverifiedMappingRecord) error
+	GetUnverifiedMappingRecord(ctx context.Context, mappingID types.ID) (*types.UnverifiedMappingRecord, error)
+	GetUnverifiedMappingRecordsInRegion(ctx context.Context, region h3light.Cell) ([]*types.UnverifiedMappingRecord, error)
+
+	GetAssumedUnverifiedCoverageByLocation(ctx context.Context, location h3light.Cell) (*types.AssumedUnverifiedCoverage, error)
+	StoreAssumedUnverifiedCoverage(ctx context.Context, assumedCoverage *types.AssumedUnverifiedCoverage) error
+	GetAllAssumedUnverifiedCoverageLocationsWithRes(ctx context.Context, res int) ([]h3light.Cell, error)
+	GetAssumedUnverifiedCoverageLocationsInRegionWithRes(ctx context.Context, region h3light.Cell, res int) ([]h3light.Cell, error)
 }
 
 func NewStore() (Store, error) {

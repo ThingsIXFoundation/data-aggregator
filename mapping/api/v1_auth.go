@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ThingsIXFoundation/data-aggregator/mapping/store/clouddatastore/models"
+	"github.com/ThingsIXFoundation/data-aggregator/utils"
 	"github.com/ThingsIXFoundation/http-utils/encoding"
 	"github.com/ThingsIXFoundation/http-utils/logging"
 	"github.com/ThingsIXFoundation/types"
@@ -88,7 +89,7 @@ func (mapi *MappingAPI) CreateChallenge(w http.ResponseWriter, r *http.Request) 
 	}
 
 	authToken := models.DBMappingAuthToken{
-		Owner:      challengeRequest.Owner.String(),
+		Owner:      utils.AddressToString(challengeRequest.Owner),
 		Expiration: time.Now().Add(6 * 30 * 24 * time.Hour),
 		Code:       "",
 		Challenge:  hex.Dump(challenge),
@@ -178,9 +179,16 @@ func (mapi *MappingAPI) SubmitSignature(w http.ResponseWriter, r *http.Request) 
 	authToken.Expiration = time.Now().Add(6 * 30 * 24 * time.Hour)
 	authToken.Code = code
 
+	err = mapi.store.DeleteAllMappingAuthTokens(ctx, authToken.Owner)
+	if err != nil {
+		log.WithError(err).Error("cannot clean auth token")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
 	err = mapi.store.StoreMappingAuthToken(ctx, authToken)
 	if err != nil {
-		log.WithError(err).Error("cannot get random string")
+		log.WithError(err).Error("cannot store auth token")
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}

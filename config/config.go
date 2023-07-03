@@ -85,11 +85,12 @@ const (
 	CONFIG_MAPPER_STORE                           = "mapper.store.type"
 	CONFIG_MAPPER_STORE_DEFAULT                   = "clouddatastore"
 
-	CONFIG_MAPPING_API_ENABLED              = "mapping.api.enabled"
-	CONFIG_MAPPING_API_SHOW_RECENT_MAPPINGS = "mapper.api.show-recent-mappings"
-	CONFIG_MAPPING_INGESTOR_ENABLED         = "mapping.ingestor.enabled"
-	CONFIG_MAPPING_STORE                    = "mapping.store.type"
-	CONFIG_MAPPING_STORE_DEFAULT            = "clouddatastore"
+	CONFIG_MAPPING_API_ENABLED                    = "mapping.api.enabled"
+	CONFIG_MAPPING_API_SHOW_RECENT_MAPPINGS       = "mapping.api.show-recent-mappings"
+	CONFIG_MAPPING_API_UNVERIFIED_MAPPING_ENABLED = "mapping.api.unverified-mapping.enabled"
+	CONFIG_MAPPING_INGESTOR_ENABLED               = "mapping.ingestor.enabled"
+	CONFIG_MAPPING_STORE                          = "mapping.store.type"
+	CONFIG_MAPPING_STORE_DEFAULT                  = "clouddatastore"
 
 	CONFIG_REWARDS_API_ENABLED   = "rewards.api.enabled"
 	CONFIG_REWARDS_STORE         = "rewards.store.type"
@@ -154,6 +155,7 @@ func PersistentFlags(flags *pflag.FlagSet) {
 	flags.Bool(CONFIG_MAPPING_INGESTOR_ENABLED, false, "enable the ingestor for mapping records")
 	flags.Bool(CONFIG_MAPPING_API_ENABLED, false, "enable the API for mapping records")
 	flags.Bool(CONFIG_MAPPING_API_SHOW_RECENT_MAPPINGS, false, "show the recent mappings too")
+	flags.Bool(CONFIG_MAPPING_API_UNVERIFIED_MAPPING_ENABLED, false, "enable the unverified mapping API.")
 	flags.String(CONFIG_MAPPING_STORE, CONFIG_MAPPING_STORE_DEFAULT, "the store to use")
 
 	flags.String(CONFIG_REWARDS_STORE, CONFIG_REWARDS_STORE_DEFAULT, "the store to use")
