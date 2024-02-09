@@ -24,6 +24,7 @@ import (
 	"github.com/ThingsIXFoundation/data-aggregator/config"
 	"github.com/ThingsIXFoundation/data-aggregator/gateway/store/clouddatastore"
 	"github.com/ThingsIXFoundation/data-aggregator/gateway/store/clouddatastore/models"
+	"github.com/ThingsIXFoundation/data-aggregator/gateway/store/postgresql"
 	h3light "github.com/ThingsIXFoundation/h3-light"
 	"github.com/ThingsIXFoundation/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -69,6 +70,8 @@ func NewStore() (Store, error) {
 	store := viper.GetString(config.CONFIG_GATEWAY_STORE)
 	if store == "clouddatastore" {
 		return clouddatastore.NewStore(context.Background())
+	} else if store == "postgresql" {
+		return postgresql.NewStore(context.Background())
 	} else {
 		return nil, fmt.Errorf("invalid store type: %s", viper.GetString(config.CONFIG_GATEWAY_STORE))
 	}

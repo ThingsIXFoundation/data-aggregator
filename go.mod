@@ -89,6 +89,7 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/hashicorp/golang-lru/v2 v2.0.3
+	github.com/jmoiron/sqlx v1.3.5
 	github.com/prometheus/client_golang v1.15.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
